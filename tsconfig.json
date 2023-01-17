@@ -1,0 +1,33 @@
+{
+    // "files": [],
+    // "include": [],
+    // "exclude": [],
+    "compilerOptions": {
+        // TYPE CHECKING
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitAny": false,
+        "noImplicitReturns": true,
+        // "noUnusedParameters": true,
+        "strict": true,
+        "useUnknownInCatchVariables": true,
+        // MODULES
+        "resolveJsonModule": true,
+        "rootDir": ".",
+        "module": "CommonJS",
+        // EMIT
+        "sourceMap": true,
+        // "noEmit": true // if using babel or something like that
+        "outDir": "dist",
+        // JAVASCRIPT SUPPORT
+        "allowJs": true,
+        "checkJs": false,
+        // EDITOR SUPPORT
+        "allowSyntheticDefaultImports": true,
+        "isolatedModules": false,
+        //"lib": [], // https://www.typescriptlang.org/tsconfig#lib
+        "target": "ES2019", // can also just use target instead of lib. Needs to be 2019 for nullish coalescing operator to work
+        // COMPILER DIAGNOSTICS
+        "extendedDiagnostics": true,
+        "explainFiles": true
+    }
+}
