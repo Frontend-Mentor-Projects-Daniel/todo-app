@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Google fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Favicon -->
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/src/assets/images/favicon-32x32.png"
+    />
+    <!-- CSS stylesheet -->
+    <link rel="stylesheet" href="/src/css/styles.css" />
+    <title>Frontend Mentor | Todo app</title>
+
+    <!-- JS -->
+    <script src="./src/js/script.js" defer></script>
+  </head>
+  <body id="light">
+    <header class="header">
+      <div class="todo-wrapper center">
+        <h1>TODO</h1>
+        <button title="toggles light and dark">
+          <img
+            src="/src/assets/images/icon-moon.svg"
+            alt=""
+            aria-hidden="true"
+          />
+        </button>
+      </div>
+      <form class="create-bar-form center">
+        <label class="sr-only" for="create-bar">Create a task</label>
+        <input
+          name="create-bar"
+          id="create-bar"
+          class="create-bar"
+          type="text"
+          placeholder="Create a new todo..."
+        />
+      </form>
+    </header>
+    <main>
+      <div class="todo-list center">
+        <ul class="list" data-random="fdafsafa">
+          <!-- <li class="list-item">
+            <button class="complete-btn">
+              <img src="/src/assets/images/icon-check.svg" alt="" />
+            </button>
+            <p class="list-item-text" contenteditable="true">
+              Jog around the park 3x
+            </p>
+            <button class="delete-btn">
+              <img src="/src/assets/images/icon-cross.svg" alt="" />
+            </button>
+          </li> -->
+        </ul>
+      </div>
+      <div class="status-bar center">
+        <div class="wrapper">
+          <div class="items-left">
+            <p>5 items left</p>
+          </div>
+          <button class="clear-btn">Clear Completed</button>
+        </div>
+        <div class="tabs">
+          <button>All</button>
+          <button>Active</button>
+          <button>Completed</button>
+        </div>
+
+        <div class="alternate-status-bar">
+          <div class="items-left">
+            <p>5 items left</p>
+          </div>
+          <button class="clear-btn">Clear Completed</button>
+
+          <div class="tabs">
+            <button>All</button>
+            <button>Active</button>
+            <button>Completed</button>
+          </div>
+        </div>
+      </div>
+      <div class="text-wrapper center">
+        <p>Drag and drop to reorder list</p>
+      </div>
+    </main>
+    <footer>
+      <div class="attribution">
+        Challenge by
+        <a
+          href="https://www.frontendmentor.io/challenges/todo-app-Su1_KokOW/"
+          target="_blank"
+          >Frontend Mentor</a
+        >. Coded by <a href="#">Ahmed & Daniel</a>.
+      </div>
+    </footer>
+  </body>
+</html>
