@@ -277,6 +277,9 @@ main .text-wrapper {
   padding-block: 16px;
   border-bottom: 1px solid black;
 }
+.todo-list .delete-btn {
+  flex-shrink: 0;
+}
 @media (min-width: 48rem) {
   .todo-list .list-item {
     padding-block: 23px;

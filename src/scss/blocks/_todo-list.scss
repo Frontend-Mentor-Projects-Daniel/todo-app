@@ -12,6 +12,10 @@
     border-bottom: 1px solid black;
   }
 
+  .delete-btn {
+    flex-shrink: 0;
+  }
+
   @media (min-width: 48rem) {
     .list-item {
       padding-block: 23px;

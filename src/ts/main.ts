@@ -1,5 +1,6 @@
 // ------------------------------------------------------------------------------
 //                                 DOM NODES
+
 //-------------------------------------------------------------------------------
 const todos = document.querySelectorAll(
   '.todo-list-item'
@@ -7,6 +8,9 @@ const todos = document.querySelectorAll(
 const form = document.querySelector('.create-bar-form') as HTMLFormElement;
 const input = document.querySelector('.create-bar') as HTMLInputElement;
 const ul = document.querySelector('.list') as HTMLUListElement;
+const template = document.querySelector(
+  '#example-list-item'
+) as HTMLTemplateElement;
 
 // ------------------------------------------------------------------------------
 //                                 TYPES
@@ -36,7 +40,7 @@ Object.freeze(init);
 // ------------------------------------------------------------------------------
 //                             UPDATE FUNCTION
 //-------------------------------------------------------------------------------
-type Msg = 'AddTodo' | 'RemoveTodo' | 'UpdateTodo' | 'ReadTodo';
+type Msg = 'AddTodo' | 'RemoveTodo' | 'UpdateTodo';
 
 function update(msg: Msg, model: Model, value: Todo): void {
   switch (msg) {
@@ -61,10 +65,6 @@ function update(msg: Msg, model: Model, value: Todo): void {
         }
       });
       break;
-
-    case 'ReadTodo':
-      model.AllTodos.push(value);
-      break;
   }
 }
 
@@ -72,19 +72,25 @@ function update(msg: Msg, model: Model, value: Todo): void {
 //                                   SCRIPTS
 //-------------------------------------------------------------------------------
 
-//* Get Todos from localStorage
+// GET TODOS FROM LOCAL STORAGE AND DISPLAY THEM
 ((model: Model) => {
   const getStoredTodos: string = getItemsFromLocalStorage('todos');
   const parseStoredTodos: Todo[] = parseTodos(getStoredTodos);
 
-  for (const todo of parseStoredTodos) {
-    update('ReadTodo', model, todo);
+  // if there're no previous todo's, create example todo
+  if (parseStoredTodos.length === 0) {
+    const newTodo = renderListItemNode(template);
+    update('AddTodo', model, newTodo);
+  } else {
+    for (const todo of parseStoredTodos) {
+      update('AddTodo', model, todo);
+    }
   }
 
   renderTodos(model.AllTodos);
 })(init);
 
-//* Create New Todo
+// CREATE NEW TODOS
 ((model: Model) => {
   form.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -101,7 +107,7 @@ function update(msg: Msg, model: Model, value: Todo): void {
   });
 })(init);
 
-//* Delete Todo
+// DELETE TODOS
 ((model: Model) => {
   ul.addEventListener('click', (e) => {
     const xImage = e.target as HTMLImageElement;
@@ -121,7 +127,7 @@ function update(msg: Msg, model: Model, value: Todo): void {
   });
 })(init);
 
-//* Update Todo
+// UPDATE TODOS
 ((model: Model) => {
   ul.addEventListener('focusout', (e) => {
     const target = e.target;
@@ -150,12 +156,30 @@ function update(msg: Msg, model: Model, value: Todo): void {
 //-------------------------------------------------------------------------------
 
 /**
+ * Displays all the todos from the global state unto the page
+ * @param todos - The global state
+ */
+function renderTodos(todos: Todo[]) {
+  ul.innerHTML = '';
+
+  let tempStorage: string[] = [];
+  for (const todo of todos) {
+    tempStorage.push(createListItem(todo.id, todo.value.trim()));
+    input.value = '';
+  }
+  ul.innerHTML = tempStorage.join('');
+}
+
+// ------------------------------------------------------------------------------
+//                              HELPER FUNCTIONS
+//-------------------------------------------------------------------------------
+/**
  * Creates a list item
  * @param id - The unique ID of the list item todo
  * @param text - The actual todo itself
  * @returns {string} The inner HTML of the <li> including the li itself
  */
-function renderListItem(id: string, text: string): string {
+function createListItem(id: string, text: string): string {
   const listItem = `
         <li class="list-item" data-id=${id}>
           <button class="complete-btn">
@@ -171,24 +195,6 @@ function renderListItem(id: string, text: string): string {
   return listItem;
 }
 
-/**
- * Displays all the todos from the global state unto the page
- * @param todos - The global state
- */
-function renderTodos(todos: Todo[]) {
-  ul.innerHTML = '';
-
-  let tempStorage: string[] = [];
-  for (const todo of todos) {
-    tempStorage.push(renderListItem(todo.id, todo.value.trim()));
-    input.value = '';
-  }
-  ul.innerHTML = tempStorage.join('');
-}
-
-// ------------------------------------------------------------------------------
-//                              HELPER FUNCTIONS
-//-------------------------------------------------------------------------------
 /**
  * Checks if a string is empty. Will trim the the middle of the string
  * @param str - A string that will be checked
@@ -289,4 +295,26 @@ function getItemsFromLocalStorage(itemName: string): string {
  */
 function parseTodos(item: string): Todo[] {
   return JSON.parse(item);
+}
+
+/**
+ * Simply for taking out the bloat from the script itself
+ * @returns The example Todo
+ */
+function renderListItemNode(template: HTMLTemplateElement): Todo {
+  const docFragment: DocumentFragment = template.content;
+  const listItemClone = docFragment.firstElementChild?.cloneNode(
+    true
+  ) as HTMLLIElement;
+
+  const id = listItemClone.dataset.id as string;
+  const pEl = listItemClone.childNodes[3];
+  const text = pEl.textContent?.trim() as string;
+
+  const newTodo: Todo = {
+    id: id,
+    value: text,
+  };
+
+  return newTodo;
 }

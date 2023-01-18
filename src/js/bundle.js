@@ -8,6 +8,7 @@ var todos = document.querySelectorAll('.todo-list-item');
 var form = document.querySelector('.create-bar-form');
 var input = document.querySelector('.create-bar');
 var ul = document.querySelector('.list');
+var template = document.querySelector('#example-list-item');
 // ------------------------------------------------------------------------------
 //                               GLOBAL STATE
 //-------------------------------------------------------------------------------
@@ -36,46 +37,48 @@ function update(msg, model, value) {
                 }
             });
             break;
-        case 'ReadTodo':
-            model.AllTodos.push(value);
-            break;
     }
 }
 // ------------------------------------------------------------------------------
 //                                   SCRIPTS
 //-------------------------------------------------------------------------------
-//* Get Todos from localStorage
+// GET TODOS FROM LOCAL STORAGE AND DISPLAY THEM
 (function (model) {
     var getStoredTodos = getItemsFromLocalStorage('todos');
     var parseStoredTodos = parseTodos(getStoredTodos);
-    var _iteratorNormalCompletion = true;
-    var _didIteratorError = false;
-    var _iteratorError = undefined;
+    // if there're no previous todo's, create example todo
+    if (parseStoredTodos.length === 0) {
+        var newTodo = renderListItemNode(template);
+        update('AddTodo', model, newTodo);
+    } else {
+        var _iteratorNormalCompletion = true;
+        var _didIteratorError = false;
+        var _iteratorError = undefined;
 
-    try {
-        for (var _iterator = parseStoredTodos[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-            var todo = _step.value;
-
-            update('ReadTodo', model, todo);
-        }
-    } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
-    } finally {
         try {
-            if (!_iteratorNormalCompletion && _iterator.return) {
-                _iterator.return();
+            for (var _iterator = parseStoredTodos[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                var todo = _step.value;
+
+                update('AddTodo', model, todo);
             }
+        } catch (err) {
+            _didIteratorError = true;
+            _iteratorError = err;
         } finally {
-            if (_didIteratorError) {
-                throw _iteratorError;
+            try {
+                if (!_iteratorNormalCompletion && _iterator.return) {
+                    _iterator.return();
+                }
+            } finally {
+                if (_didIteratorError) {
+                    throw _iteratorError;
+                }
             }
         }
     }
-
     renderTodos(model.AllTodos);
 })(init);
-//* Create New Todo
+// CREATE NEW TODOS
 (function (model) {
     form.addEventListener('submit', function (e) {
         e.preventDefault();
@@ -89,7 +92,7 @@ function update(msg, model, value) {
         renderTodos(model.AllTodos);
     });
 })(init);
-//* Delete Todo
+// DELETE TODOS
 (function (model) {
     ul.addEventListener('click', function (e) {
         var xImage = e.target;
@@ -105,7 +108,7 @@ function update(msg, model, value) {
         }
     });
 })(init);
-//* Update Todo
+// UPDATE TODOS
 (function (model) {
     ul.addEventListener('focusout', function (e) {
         var target = e.target;
@@ -130,16 +133,6 @@ function update(msg, model, value) {
 //                              VIEW FUNCTIONS
 //-------------------------------------------------------------------------------
 /**
- * Creates a list item
- * @param id - The unique ID of the list item todo
- * @param text - The actual todo itself
- * @returns {string} The inner HTML of the <li> including the li itself
- */
-function renderListItem(id, text) {
-    var listItem = '\n        <li class="list-item" data-id=' + id + '>\n          <button class="complete-btn">\n            <img src="/src/assets/images/icon-check.svg" alt="" />\n          </button>\n          <p class="list-item-text" contenteditable="true">' + text + '</p>\n          <button class="delete-btn todo-delete-icon">\n            <img class="d" src="/src/assets/images/icon-cross.svg" alt="" />\n          </button>\n        </li>\n    ';
-    return listItem;
-}
-/**
  * Displays all the todos from the global state unto the page
  * @param todos - The global state
  */
@@ -154,7 +147,7 @@ function renderTodos(todos) {
         for (var _iterator2 = todos[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
             var todo = _step2.value;
 
-            tempStorage.push(renderListItem(todo.id, todo.value.trim()));
+            tempStorage.push(createListItem(todo.id, todo.value.trim()));
             input.value = '';
         }
     } catch (err) {
@@ -177,6 +170,16 @@ function renderTodos(todos) {
 // ------------------------------------------------------------------------------
 //                              HELPER FUNCTIONS
 //-------------------------------------------------------------------------------
+/**
+ * Creates a list item
+ * @param id - The unique ID of the list item todo
+ * @param text - The actual todo itself
+ * @returns {string} The inner HTML of the <li> including the li itself
+ */
+function createListItem(id, text) {
+    var listItem = '\n        <li class="list-item" data-id=' + id + '>\n          <button class="complete-btn">\n            <img src="/src/assets/images/icon-check.svg" alt="" />\n          </button>\n          <p class="list-item-text" contenteditable="true">' + text + '</p>\n          <button class="delete-btn todo-delete-icon">\n            <img class="d" src="/src/assets/images/icon-cross.svg" alt="" />\n          </button>\n        </li>\n    ';
+    return listItem;
+}
 /**
  * Checks if a string is empty. Will trim the the middle of the string
  * @param str - A string that will be checked
@@ -265,6 +268,23 @@ function getItemsFromLocalStorage(itemName) {
  */
 function parseTodos(item) {
     return JSON.parse(item);
+}
+/**
+ * Simply for taking out the bloat from the script itself
+ * @returns The example Todo
+ */
+function renderListItemNode(template) {
+    var _a, _b;
+    var docFragment = template.content;
+    var listItemClone = (_a = docFragment.firstElementChild) === null || _a === void 0 ? void 0 : _a.cloneNode(true);
+    var id = listItemClone.dataset.id;
+    var pEl = listItemClone.childNodes[3];
+    var text = (_b = pEl.textContent) === null || _b === void 0 ? void 0 : _b.trim();
+    var newTodo = {
+        id: id,
+        value: text
+    };
+    return newTodo;
 }
 
 },{}]},{},[1])
