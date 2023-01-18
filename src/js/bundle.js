@@ -90,9 +90,12 @@ function update(msg, model, value) {
     }
     renderTodos(model.AllTodos);
     // add event listener to initial todo so that it can be set to complete as well
-    var initialTodo = document.querySelector('.complete-btn');
-    initialTodo === null || initialTodo === void 0 ? void 0 : initialTodo.addEventListener('click', function (e) {
-        handleCompletedClick(e, model);
+    var allTodos = document.querySelectorAll('.complete-btn');
+    allTodos.forEach(function (todo) {
+        todo.addEventListener('click', function (e) {
+            handleCompletedClick(e, model);
+            saveToLocalStorage(model.AllTodos);
+        });
     });
 })(init);
 // CREATE NEW TODOS
@@ -147,6 +150,7 @@ function update(msg, model, value) {
                     value: text,
                     completed: false
                 };
+                handleCompletedClick(e, model);
                 update('UpdateTodo', model, updatedTodo);
                 saveToLocalStorage(model.AllTodos);
             } else {
@@ -230,7 +234,6 @@ function handleCompletedClick(e, model) {
         currentTodo.completed = !currentTodo.completed;
         update('CompleteTodo', model, currentTodo);
         toggleCompleteAttribute(listItem, currentTodo.completed);
-        console.log(model.AllTodos);
     }
 }
 // ------------------------------------------------------------------------------

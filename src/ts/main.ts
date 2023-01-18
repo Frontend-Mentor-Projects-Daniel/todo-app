@@ -107,9 +107,12 @@ function update(msg: Msg, model: Model, value: Todo): void {
   renderTodos(model.AllTodos);
 
   // add event listener to initial todo so that it can be set to complete as well
-  const initialTodo = document.querySelector('.complete-btn');
-  initialTodo?.addEventListener('click', (e) => {
-    handleCompletedClick(e, model);
+  const allTodos = document.querySelectorAll('.complete-btn');
+  allTodos.forEach((todo) => {
+    todo.addEventListener('click', (e) => {
+      handleCompletedClick(e, model);
+      saveToLocalStorage(model.AllTodos);
+    });
   });
 })(init);
 
@@ -128,7 +131,7 @@ function update(msg: Msg, model: Model, value: Todo): void {
 
     renderTodos(model.AllTodos);
 
-    // add eventListener to button now so that they will accept click events when created
+    // add an eventListener to each button now so that they will accept click events when created
     const completeButtons = document.querySelectorAll('.complete-btn');
     completeButtons.forEach((button) => {
       button.addEventListener('click', (e) => {
@@ -175,6 +178,7 @@ function update(msg: Msg, model: Model, value: Todo): void {
           value: text,
           completed: false,
         };
+        handleCompletedClick(e, model);
         update('UpdateTodo', model, updatedTodo);
         saveToLocalStorage(model.AllTodos);
       } else {
@@ -244,6 +248,7 @@ function deleteTodo(
  */
 function handleCompletedClick(e: Event, model: Model) {
   const completeBtn = e.currentTarget as HTMLButtonElement;
+
   const listItem = completeBtn.parentElement as HTMLLIElement;
   const id = listItem.dataset.id;
 
@@ -254,7 +259,6 @@ function handleCompletedClick(e: Event, model: Model) {
     update('CompleteTodo', model, currentTodo);
 
     toggleCompleteAttribute(listItem, currentTodo.completed);
-    console.log(model.AllTodos);
   }
 }
 
