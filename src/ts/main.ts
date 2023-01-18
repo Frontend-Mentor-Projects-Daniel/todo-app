@@ -110,22 +110,26 @@ function update(msg: Msg, model: Model, value: Todo): void {
 
 //* Update Todo
 ((model: Model) => {
-  // TODO: Update no longer has an update button, thus this needs to change
-  // ul.addEventListener('click', (e) => {
-  //   const button = e.target as HTMLButtonElement;
-  //   const li = button.parentElement as HTMLLIElement;
-  //   const p = li.firstElementChild as HTMLParagraphElement;
-  //   const todoId = li.dataset.id as string;
-  //   const isDeleteOrUpdateBtn = checkTypeOfButton(button);
-  //   if (isDeleteOrUpdateBtn === 'update-btn') {
-  //     const oldTodo = findTodo(todoId, model);
-  //     const updatedTodo = Object.assign(oldTodo, {
-  //       value: p.textContent?.trim(),
-  //     });
-  //     update('UpdateTodo', model, updatedTodo);
-  //     saveToLocalStorage(model.AllTodos);
-  //   }
-  // });
+  ul.addEventListener('focusout', (e) => {
+    const target = e.target;
+
+    if (target instanceof HTMLParagraphElement) {
+      const text = target.textContent !== null ? target.textContent : '';
+      const listItem = target.parentElement as HTMLLIElement;
+      const listItemID = listItem.dataset.id;
+
+      if (listItemID !== undefined) {
+        const updatedTodo: Todo = {
+          id: listItemID,
+          value: text,
+        };
+        update('UpdateTodo', model, updatedTodo);
+        saveToLocalStorage(model.AllTodos);
+      } else {
+        throw new Error("This list item doesn't have an ID");
+      }
+    }
+  });
 })(init);
 
 // VIEW FUNCTIONS

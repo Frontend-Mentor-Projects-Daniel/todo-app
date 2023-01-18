@@ -101,22 +101,24 @@ function update(msg, model, value) {
 })(init);
 //* Update Todo
 (function (model) {
-    // TODO: Update no longer has an update button, thus this needs to change
-    // ul.addEventListener('click', (e) => {
-    //   const button = e.target as HTMLButtonElement;
-    //   const li = button.parentElement as HTMLLIElement;
-    //   const p = li.firstElementChild as HTMLParagraphElement;
-    //   const todoId = li.dataset.id as string;
-    //   const isDeleteOrUpdateBtn = checkTypeOfButton(button);
-    //   if (isDeleteOrUpdateBtn === 'update-btn') {
-    //     const oldTodo = findTodo(todoId, model);
-    //     const updatedTodo = Object.assign(oldTodo, {
-    //       value: p.textContent?.trim(),
-    //     });
-    //     update('UpdateTodo', model, updatedTodo);
-    //     saveToLocalStorage(model.AllTodos);
-    //   }
-    // });
+    ul.addEventListener('focusout', function (e) {
+        var target = e.target;
+        if (target instanceof HTMLParagraphElement) {
+            var text = target.textContent !== null ? target.textContent : '';
+            var listItem = target.parentElement;
+            var listItemID = listItem.dataset.id;
+            if (listItemID !== undefined) {
+                var updatedTodo = {
+                    id: listItemID,
+                    value: text
+                };
+                update('UpdateTodo', model, updatedTodo);
+                saveToLocalStorage(model.AllTodos);
+            } else {
+                throw new Error("This list item doesn't have an ID");
+            }
+        }
+    });
 })(init);
 // VIEW FUNCTIONS
 // create list item
