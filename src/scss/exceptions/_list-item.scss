@@ -1,0 +1,16 @@
+.list-item[data-completed='true'] {
+  // display: none;
+  // text-decoration: line-through;
+}
+
+.list-item[data-completed='true'] .complete-btn {
+  border: 5px solid red;
+}
+
+.list-item[data-active='false'] {
+  display: none;
+}
+
+// .list-item[data-filter='all'] {
+//   display: flex;
+// }

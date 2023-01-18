@@ -53,12 +53,17 @@
           <template id="example-list-item">
             <li class="list-item" data-id="001">
               <button class="complete-btn">
-                <img src="/src/assets/images/icon-check.svg" alt="" />
+                <img
+                  src="/src/assets/images/icon-check.svg"
+                  aria-hidden="true"
+                  alt=""
+                />
               </button>
               <p class="list-item-text" contenteditable="true">
                 This is an example todo. Click on the X to delete it, click on
                 the circle to cross it out as complete. Double click on this
-                text in order to edit it
+                text in order to edit it. This todo will disappear as you create
+                your own.
               </p>
               <button class="delete-btn">
                 <img src="/src/assets/images/icon-cross.svg" alt="" />

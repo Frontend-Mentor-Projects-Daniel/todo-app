@@ -1,3 +1,8 @@
+// get the id of the todo ✅
+// find the specific todo ✅
+// change the completed property to true ✅
+// add to exceptions any .complete-btn with the data-attribute of completed="true" should have a background of the gradient
+
 // ------------------------------------------------------------------------------
 //                                 DOM NODES
 
@@ -18,9 +23,12 @@ const template = document.querySelector(
 type Todo = {
   id: string;
   value: string;
+  completed: boolean;
 };
 
-type validButton = 'delete-btn';
+type validButton = 'delete-btn' | 'complete-btn' | 'not-a-button';
+
+type allowedElements = 'p' | 'ins' | 'del';
 
 // ------------------------------------------------------------------------------
 //                                 MODEL
@@ -40,7 +48,7 @@ Object.freeze(init);
 // ------------------------------------------------------------------------------
 //                             UPDATE FUNCTION
 //-------------------------------------------------------------------------------
-type Msg = 'AddTodo' | 'RemoveTodo' | 'UpdateTodo';
+type Msg = 'AddTodo' | 'RemoveTodo' | 'UpdateTodo' | 'CompleteTodo';
 
 function update(msg: Msg, model: Model, value: Todo): void {
   switch (msg) {
@@ -62,6 +70,15 @@ function update(msg: Msg, model: Model, value: Todo): void {
         if (todo.id === value.id) {
           const index = model.AllTodos.indexOf(todo);
           model.AllTodos[index].value = value.value;
+        }
+      });
+      break;
+
+    case 'CompleteTodo':
+      model.AllTodos.forEach((todo) => {
+        if (todo.id === value.id) {
+          const index = model.AllTodos.indexOf(todo);
+          model.AllTodos[index].completed = value.completed;
         }
       });
       break;
@@ -88,6 +105,12 @@ function update(msg: Msg, model: Model, value: Todo): void {
   }
 
   renderTodos(model.AllTodos);
+
+  // add event listener to initial todo so that it can be set to complete as well
+  const initialTodo = document.querySelector('.complete-btn');
+  initialTodo?.addEventListener('click', (e) => {
+    handleCompletedClick(e, model);
+  });
 })(init);
 
 // CREATE NEW TODOS
@@ -104,6 +127,15 @@ function update(msg: Msg, model: Model, value: Todo): void {
     }
 
     renderTodos(model.AllTodos);
+
+    // add eventListener to button now so that they will accept click events when created
+    const completeButtons = document.querySelectorAll('.complete-btn');
+    completeButtons.forEach((button) => {
+      button.addEventListener('click', (e) => {
+        handleCompletedClick(e, model);
+        saveToLocalStorage(model.AllTodos);
+      });
+    });
   });
 })(init);
 
@@ -141,6 +173,7 @@ function update(msg: Msg, model: Model, value: Todo): void {
         const updatedTodo: Todo = {
           id: listItemID,
           value: text,
+          completed: false,
         };
         update('UpdateTodo', model, updatedTodo);
         saveToLocalStorage(model.AllTodos);
@@ -150,6 +183,9 @@ function update(msg: Msg, model: Model, value: Todo): void {
     }
   });
 })(init);
+
+// SET FILTER
+((model: Model) => {})(init);
 
 // ------------------------------------------------------------------------------
 //                              VIEW FUNCTIONS
@@ -164,10 +200,62 @@ function renderTodos(todos: Todo[]) {
 
   let tempStorage: string[] = [];
   for (const todo of todos) {
-    tempStorage.push(createListItem(todo.id, todo.value.trim()));
+    tempStorage.push(
+      createListItem(todo.id, todo.value.trim(), todo.completed)
+    );
     input.value = '';
   }
   ul.innerHTML = tempStorage.join('');
+}
+
+/**
+ * Mutates a todo so that its completed data attribute is toggled
+ * @param listItem - A list item currently appended to the DOM
+ * @param value - What the completed data attribute should be st to
+ */
+function toggleCompleteAttribute(listItem: HTMLLIElement, value: boolean) {
+  const isCompleted = value;
+
+  listItem.dataset.completed = isCompleted.toString();
+}
+
+/**
+ * Removes a Todo <li> from the DOM
+ * @param id - A unique id belonging to an object of type Todo
+ * @param model - The global state
+ * @param listElement - A list element to be removed
+ * @returns {Todo} The deleted Todo object
+ */
+function deleteTodo(
+  id: string,
+  model: Model,
+  listElement: HTMLLIElement
+): Todo {
+  const todo = findTodo(id, model);
+  listElement.remove();
+
+  return todo;
+}
+
+/**
+ * Updates the global state, toggles the completed data attribute on a list item and replaces the p element with a del element
+ * @param e - A click event
+ * @param model - The global state
+ */
+function handleCompletedClick(e: Event, model: Model) {
+  const completeBtn = e.currentTarget as HTMLButtonElement;
+  const listItem = completeBtn.parentElement as HTMLLIElement;
+  const id = listItem.dataset.id;
+
+  if (id !== undefined) {
+    const currentTodo = findTodo(id, model);
+    currentTodo.completed = !currentTodo.completed;
+
+    update('CompleteTodo', model, currentTodo);
+
+    toggleCompleteAttribute(listItem, currentTodo.completed);
+    console.log(model.AllTodos);
+  }
 }
 
 // ------------------------------------------------------------------------------
@@ -177,15 +265,22 @@ function renderTodos(todos: Todo[]) {
  * Creates a list item
  * @param id - The unique ID of the list item todo
  * @param text - The actual todo itself
+ * @param el - Represents an Html element, ins and del are semantically correct but a p tag can be used as well
+ * @param completed - Reflects whether the complete button has been clicked or not
  * @returns {string} The inner HTML of the <li> including the li itself
  */
-function createListItem(id: string, text: string): string {
+function createListItem(
+  id: string,
+  text: string,
+  completed: boolean = false,
+  el: allowedElements = 'p'
+): string {
   const listItem = `
-        <li class="list-item" data-id=${id}>
+        <li class="list-item" data-id=${id} data-completed="${completed}">
           <button class="complete-btn">
-            <img src="/src/assets/images/icon-check.svg" alt="" />
+            <img src="/src/assets/images/icon-check.svg" aria-hidden="true" alt="" />
           </button>
-          <p class="list-item-text" contenteditable="true">${text}</p>
+          <${el} class="list-item-text" contenteditable="true">${text}</${el}>
           <button class="delete-btn todo-delete-icon">
             <img class="d" src="/src/assets/images/icon-cross.svg" alt="" />
           </button>
@@ -221,6 +316,7 @@ function createTodoObject(value: string): Todo {
   return {
     id: generateId(),
     value: value,
+    completed: false,
   };
 }
 
@@ -234,8 +330,10 @@ function createTodoObject(value: string): Todo {
 function checkTypeOfButton(element: HTMLButtonElement): validButton {
   if (element.classList.contains('todo-delete-icon')) {
     return 'delete-btn';
+  } else if (element.classList.contains('complete-btn')) {
+    return 'complete-btn';
   } else {
-    throw new Error('Not a valid type of button');
+    return 'not-a-button';
   }
 }
 
@@ -249,24 +347,6 @@ function findTodo(id: string, model: Model): Todo {
   const matchingTodo = model.AllTodos.filter((todo) => todo.id === id);
 
   return matchingTodo[0];
-}
-
-/**
- * Removes a Todo <li> from the DOM
- * @param id - A unique id belonging to an object of type Todo
- * @param model - The global state
- * @param listElement - A list element to be removed
- * @returns {Todo} The deleted Todo object
- */
-function deleteTodo(
-  id: string,
-  model: Model,
-  listElement: HTMLLIElement
-): Todo {
-  const todo = findTodo(id, model);
-  listElement.remove();
-
-  return todo;
 }
 
 /**
@@ -314,6 +394,7 @@ function renderListItemNode(template: HTMLTemplateElement): Todo {
   const newTodo: Todo = {
     id: id,
     value: text,
+    completed: false,
   };
 
   return newTodo;

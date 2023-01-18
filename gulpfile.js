@@ -139,7 +139,7 @@ function watchTask() {
   );
 
   watch(
-    ['src/sass/**/*.scss'],
+    ['src/scss/**/*.scss'],
     series(scssTask, cacheBustTask, browserSyncReload)
   );
   watch('src/assets/images/*', series(imageminTask, browserSyncReload));

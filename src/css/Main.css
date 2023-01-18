@@ -211,6 +211,10 @@ body#dark {
   color: var(--clr-light-blue);
 }
 
+.d-none {
+  display: none;
+}
+
 header {
   background-image: url(/src/assets/images/bg-mobile-light.jpg);
   background-size: cover;
@@ -383,5 +387,13 @@ footer .attribution {
 }
 footer .attribution a {
   color: hsl(228deg, 45%, 44%);
+}
+
+.list-item[data-completed=true] .complete-btn {
+  border: 5px solid red;
+}
+
+.list-item[data-active=false] {
+  display: none;
 }
 /*# sourceMappingURL=Main.css.map */
