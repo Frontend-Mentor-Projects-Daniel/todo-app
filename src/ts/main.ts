@@ -1,4 +1,6 @@
-// DOM NODES
+// ------------------------------------------------------------------------------
+//                                 DOM NODES
+//-------------------------------------------------------------------------------
 const todos = document.querySelectorAll(
   '.todo-list-item'
 ) as NodeListOf<HTMLLIElement>;
@@ -6,26 +8,34 @@ const form = document.querySelector('.create-bar-form') as HTMLFormElement;
 const input = document.querySelector('.create-bar') as HTMLInputElement;
 const ul = document.querySelector('.list') as HTMLUListElement;
 
-// TYPES
+// ------------------------------------------------------------------------------
+//                                 TYPES
+//-------------------------------------------------------------------------------
 type Todo = {
   id: string;
   value: string;
 };
 
-type validButton = 'delete-btn' | 'update-btn' | 'content-editing';
+type validButton = 'delete-btn';
 
-// MODEL
+// ------------------------------------------------------------------------------
+//                                 MODEL
+//-------------------------------------------------------------------------------
 type Model = {
   AllTodos: Todo[];
 };
 
-// GLOBAL STATE
+// ------------------------------------------------------------------------------
+//                               GLOBAL STATE
+//-------------------------------------------------------------------------------
 const init: Model = {
   AllTodos: [],
 };
 Object.freeze(init);
 
-// UPDATE
+// ------------------------------------------------------------------------------
+//                             UPDATE FUNCTION
+//-------------------------------------------------------------------------------
 type Msg = 'AddTodo' | 'RemoveTodo' | 'UpdateTodo' | 'ReadTodo';
 
 function update(msg: Msg, model: Model, value: Todo): void {
@@ -57,7 +67,10 @@ function update(msg: Msg, model: Model, value: Todo): void {
       break;
   }
 }
-// VIEW SCRIPTS
+
+// ------------------------------------------------------------------------------
+//                                   SCRIPTS
+//-------------------------------------------------------------------------------
 
 //* Get Todos from localStorage
 ((model: Model) => {
@@ -132,9 +145,16 @@ function update(msg: Msg, model: Model, value: Todo): void {
   });
 })(init);
 
-// VIEW FUNCTIONS
+// ------------------------------------------------------------------------------
+//                              VIEW FUNCTIONS
+//-------------------------------------------------------------------------------
 
-// create list item
+/**
+ * Creates a list item
+ * @param id - The unique ID of the list item todo
+ * @param text - The actual todo itself
+ * @returns {string} The inner HTML of the <li> including the li itself
+ */
 function renderListItem(id: string, text: string): string {
   const listItem = `
         <li class="list-item" data-id=${id}>
@@ -151,7 +171,10 @@ function renderListItem(id: string, text: string): string {
   return listItem;
 }
 
-// display all todos on page
+/**
+ * Displays all the todos from the global state unto the page
+ * @param todos - The global state
+ */
 function renderTodos(todos: Todo[]) {
   ul.innerHTML = '';
 
@@ -163,19 +186,31 @@ function renderTodos(todos: Todo[]) {
   ul.innerHTML = tempStorage.join('');
 }
 
-// HELPER FUNCTIONS
-
-// check if string is empty
+// ------------------------------------------------------------------------------
+//                              HELPER FUNCTIONS
+//-------------------------------------------------------------------------------
+/**
+ * Checks if a string is empty. Will trim the the middle of the string
+ * @param str - A string that will be checked
+ * @returns {boolean} True if string is empty, false otherwise
+ */
 function CheckIfEmptyString(str: string): boolean {
   return str.trim() === '';
 }
 
-// generate unique id
-function generateId() {
+/**
+ * Generates a unique id
+ * @returns {string} A unique ID
+ */
+function generateId(): string {
   return Math.random().toString(36).slice(2);
 }
 
-// create todo object
+/**
+ * Creates an object of type Todo
+ * @param value - A string which should be the actual todo itself
+ * @returns {Todo} A todo object
+ */
 function createTodoObject(value: string): Todo {
   return {
     id: generateId(),
@@ -183,25 +218,40 @@ function createTodoObject(value: string): Todo {
   };
 }
 
-// Check to see if button is update or delete button
+/**
+ * Checks for the type of button being passed in
+ * @param element - The button that was clicked on
+ * @returns {validButton} A message stating the type of button that was clicked on
+ * @throws {new Error} A string error built with the Error constructor
+ * @example checkTypeOfButton(deleteBtn) -> 'delete-btn'
+ */
 function checkTypeOfButton(element: HTMLButtonElement): validButton {
   if (element.classList.contains('todo-delete-icon')) {
     return 'delete-btn';
-  } else if (element.classList.contains('todo-update-icon')) {
-    return 'update-btn';
   } else {
-    return 'content-editing';
+    throw new Error('Not a valid type of button');
   }
 }
 
-// find a todo
+/**
+ * Finds a specific Todo based on an ID
+ * @param id - A unique ID belonging to an object of type Todo
+ * @param model - The global state
+ * @returns {Todo} The Todo which matches the id passed in
+ */
 function findTodo(id: string, model: Model): Todo {
   const matchingTodo = model.AllTodos.filter((todo) => todo.id === id);
 
   return matchingTodo[0];
 }
 
-// delete a todo
+/**
+ * Removes a Todo <li> from the DOM
+ * @param id - A unique id belonging to an object of type Todo
+ * @param model - The global state
+ * @param listElement - A list element to be removed
+ * @returns {Todo} The deleted Todo object
+ */
 function deleteTodo(
   id: string,
   model: Model,
@@ -213,19 +263,30 @@ function deleteTodo(
   return todo;
 }
 
-// save todos to local storage
+/**
+ * Saves users todos to local storage
+ * @param todos - The global state that should be saved to local storage
+ */
 function saveToLocalStorage(todos: Todo[]) {
   const todoToJson = JSON.stringify(todos);
   localStorage.setItem('todos', todoToJson);
 }
 
-// get todos from local storage
+/**
+ * Retrieves a JSON string from localStorage
+ * @param itemName - The key in the key:value pair of localStorage
+ * @returns {string} Either a string of the users todos or an empty array
+ */
 function getItemsFromLocalStorage(itemName: string): string {
   const storage = localStorage.getItem(itemName);
   return storage !== null ? storage : '[]';
 }
 
-// parse todos
+/**
+ * Parses the users todo's
+ * @param item - Parses a string
+ * @returns {Todo[]} An array of objects of type Todo
+ */
 function parseTodos(item: string): Todo[] {
   return JSON.parse(item);
 }

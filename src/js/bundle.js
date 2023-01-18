@@ -1,12 +1,16 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
-// DOM NODES
+// ------------------------------------------------------------------------------
+//                                 DOM NODES
+//-------------------------------------------------------------------------------
 
 var todos = document.querySelectorAll('.todo-list-item');
 var form = document.querySelector('.create-bar-form');
 var input = document.querySelector('.create-bar');
 var ul = document.querySelector('.list');
-// GLOBAL STATE
+// ------------------------------------------------------------------------------
+//                               GLOBAL STATE
+//-------------------------------------------------------------------------------
 var init = {
     AllTodos: []
 };
@@ -37,7 +41,9 @@ function update(msg, model, value) {
             break;
     }
 }
-// VIEW SCRIPTS
+// ------------------------------------------------------------------------------
+//                                   SCRIPTS
+//-------------------------------------------------------------------------------
 //* Get Todos from localStorage
 (function (model) {
     var getStoredTodos = getItemsFromLocalStorage('todos');
@@ -120,13 +126,23 @@ function update(msg, model, value) {
         }
     });
 })(init);
-// VIEW FUNCTIONS
-// create list item
+// ------------------------------------------------------------------------------
+//                              VIEW FUNCTIONS
+//-------------------------------------------------------------------------------
+/**
+ * Creates a list item
+ * @param id - The unique ID of the list item todo
+ * @param text - The actual todo itself
+ * @returns {string} The inner HTML of the <li> including the li itself
+ */
 function renderListItem(id, text) {
     var listItem = '\n        <li class="list-item" data-id=' + id + '>\n          <button class="complete-btn">\n            <img src="/src/assets/images/icon-check.svg" alt="" />\n          </button>\n          <p class="list-item-text" contenteditable="true">' + text + '</p>\n          <button class="delete-btn todo-delete-icon">\n            <img class="d" src="/src/assets/images/icon-cross.svg" alt="" />\n          </button>\n        </li>\n    ';
     return listItem;
 }
-// display all todos on page
+/**
+ * Displays all the todos from the global state unto the page
+ * @param todos - The global state
+ */
 function renderTodos(todos) {
     ul.innerHTML = '';
     var tempStorage = [];
@@ -158,56 +174,95 @@ function renderTodos(todos) {
 
     ul.innerHTML = tempStorage.join('');
 }
-// HELPER FUNCTIONS
-// check if string is empty
+// ------------------------------------------------------------------------------
+//                              HELPER FUNCTIONS
+//-------------------------------------------------------------------------------
+/**
+ * Checks if a string is empty. Will trim the the middle of the string
+ * @param str - A string that will be checked
+ * @returns {boolean} True if string is empty, false otherwise
+ */
 function CheckIfEmptyString(str) {
     return str.trim() === '';
 }
-// generate unique id
+/**
+ * Generates a unique id
+ * @returns {string} A unique ID
+ */
 function generateId() {
     return Math.random().toString(36).slice(2);
 }
-// create todo object
+/**
+ * Creates an object of type Todo
+ * @param value - A string which should be the actual todo itself
+ * @returns {Todo} A todo object
+ */
 function createTodoObject(value) {
     return {
         id: generateId(),
         value: value
     };
 }
-// Check to see if button is update or delete button
+/**
+ * Checks for the type of button being passed in
+ * @param element - The button that was clicked on
+ * @returns {validButton} A message stating the type of button that was clicked on
+ * @throws {new Error} A string error built with the Error constructor
+ * @example checkTypeOfButton(deleteBtn) -> 'delete-btn'
+ */
 function checkTypeOfButton(element) {
     if (element.classList.contains('todo-delete-icon')) {
         return 'delete-btn';
-    } else if (element.classList.contains('todo-update-icon')) {
-        return 'update-btn';
     } else {
-        return 'content-editing';
+        throw new Error('Not a valid type of button');
     }
 }
-// find a todo
+/**
+ * Finds a specific Todo based on an ID
+ * @param id - A unique ID belonging to an object of type Todo
+ * @param model - The global state
+ * @returns {Todo} The Todo which matches the id passed in
+ */
 function findTodo(id, model) {
     var matchingTodo = model.AllTodos.filter(function (todo) {
         return todo.id === id;
     });
     return matchingTodo[0];
 }
-// delete a todo
+/**
+ * Removes a Todo <li> from the DOM
+ * @param id - A unique id belonging to an object of type Todo
+ * @param model - The global state
+ * @param listElement - A list element to be removed
+ * @returns {Todo} The deleted Todo object
+ */
 function deleteTodo(id, model, listElement) {
     var todo = findTodo(id, model);
     listElement.remove();
     return todo;
 }
-// save todos to local storage
+/**
+ * Saves users todos to local storage
+ * @param todos - The global state that should be saved to local storage
+ */
 function saveToLocalStorage(todos) {
     var todoToJson = JSON.stringify(todos);
     localStorage.setItem('todos', todoToJson);
 }
-// get todos from local storage
+/**
+ * Retrieves a JSON string from localStorage
+ * @param itemName - The key in the key:value pair of localStorage
+ * @returns {string} Either a string of the users todos or an empty array
+ */
 function getItemsFromLocalStorage(itemName) {
     var storage = localStorage.getItem(itemName);
     return storage !== null ? storage : '[]';
 }
-// parse todos
+/**
+ * Parses the users todo's
+ * @param item - Parses a string
+ * @returns {Todo[]} An array of objects of type Todo
+ */
 function parseTodos(item) {
     return JSON.parse(item);
 }
