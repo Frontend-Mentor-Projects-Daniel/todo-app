@@ -110,7 +110,7 @@ function update(msg: Msg, model: Model, value: Todo): void {
   const allTodos = document.querySelectorAll('.complete-btn');
   allTodos.forEach((todo) => {
     todo.addEventListener('click', (e) => {
-      handleCompletedClick(e, model);
+      // handleCompletedClick(e, model);
       saveToLocalStorage(model.AllTodos);
     });
   });
@@ -135,7 +135,15 @@ function update(msg: Msg, model: Model, value: Todo): void {
     const completeButtons = document.querySelectorAll('.complete-btn');
     completeButtons.forEach((button) => {
       button.addEventListener('click', (e) => {
-        handleCompletedClick(e, model);
+        const newChild = document.createElement('del');
+        newChild.className = 'list-item-text';
+        // newChild.textContent = text;
+        // const oldChild = target;
+        // const parent = listItem;
+
+        // const replacementInfo = { parent, newChild, oldChild };
+
+        // handleCompletedClick(e, model);
         saveToLocalStorage(model.AllTodos);
       });
     });
@@ -178,8 +186,18 @@ function update(msg: Msg, model: Model, value: Todo): void {
           value: text,
           completed: false,
         };
-        handleCompletedClick(e, model);
+
+        const newChild = document.createElement('del');
+        newChild.className = 'list-item-text';
+        newChild.textContent = text;
+        const oldChild = target;
+        const parent = listItem;
+
+        const replacementInfo = { parent, newChild, oldChild };
+        // console.log(replacementInfo);
+
         update('UpdateTodo', model, updatedTodo);
+        // handleCompletedClick(e, model, replacementInfo);
         saveToLocalStorage(model.AllTodos);
       } else {
         throw new Error("This list item doesn't have an ID");
@@ -204,8 +222,15 @@ function renderTodos(todos: Todo[]) {
 
   let tempStorage: string[] = [];
   for (const todo of todos) {
+    const determineElement = todo.completed ? 'del' : 'p';
+
     tempStorage.push(
-      createListItem(todo.id, todo.value.trim(), todo.completed)
+      createListItem(
+        todo.id,
+        todo.value.trim(),
+        todo.completed,
+        determineElement
+      )
     );
     input.value = '';
   }
@@ -242,11 +267,14 @@ function deleteTodo(
 }
 
 /**
- * Updates the global state, toggles the completed data attribute on a list item and replaces the p element with a del element
+ * Updates the global state, toggles the completed data attribute on a list item and replaces the p element with a del element if needed
  * @param e - A click event
  * @param model - The global state
+ * @param el -
  */
-function handleCompletedClick(e: Event, model: Model) {
+function handleCompletedClick(e: Event, model: Model, el = {}) {
+  console.log(el);
+
   const completeBtn = e.currentTarget as HTMLButtonElement;
 
   const listItem = completeBtn.parentElement as HTMLLIElement;
@@ -255,6 +283,15 @@ function handleCompletedClick(e: Event, model: Model) {
   if (id !== undefined) {
     const currentTodo = findTodo(id, model);
     currentTodo.completed = !currentTodo.completed;
+
+    // const determineElement = currentTodo.completed ? 'del' : 'p';
+
+    // const completedTodo = createListItem(
+    //   id,
+    //   currentTodo.value,
+    //   currentTodo.completed,
+    //   determineElement
+    // );
 
     update('CompleteTodo', model, currentTodo);
 

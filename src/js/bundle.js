@@ -93,7 +93,7 @@ function update(msg, model, value) {
     var allTodos = document.querySelectorAll('.complete-btn');
     allTodos.forEach(function (todo) {
         todo.addEventListener('click', function (e) {
-            handleCompletedClick(e, model);
+            // handleCompletedClick(e, model);
             saveToLocalStorage(model.AllTodos);
         });
     });
@@ -110,11 +110,17 @@ function update(msg, model, value) {
             saveToLocalStorage(model.AllTodos);
         }
         renderTodos(model.AllTodos);
-        // add eventListener to button now so that they will accept click events when created
+        // add an eventListener to each button now so that they will accept click events when created
         var completeButtons = document.querySelectorAll('.complete-btn');
         completeButtons.forEach(function (button) {
             button.addEventListener('click', function (e) {
-                handleCompletedClick(e, model);
+                var newChild = document.createElement('del');
+                newChild.className = 'list-item-text';
+                // newChild.textContent = text;
+                // const oldChild = target;
+                // const parent = listItem;
+                // const replacementInfo = { parent, newChild, oldChild };
+                // handleCompletedClick(e, model);
                 saveToLocalStorage(model.AllTodos);
             });
         });
@@ -150,8 +156,15 @@ function update(msg, model, value) {
                     value: text,
                     completed: false
                 };
-                handleCompletedClick(e, model);
+                var newChild = document.createElement('del');
+                newChild.className = 'list-item-text';
+                newChild.textContent = text;
+                var oldChild = target;
+                var parent = listItem;
+                var replacementInfo = { parent: parent, newChild: newChild, oldChild: oldChild };
+                // console.log(replacementInfo);
                 update('UpdateTodo', model, updatedTodo);
+                // handleCompletedClick(e, model, replacementInfo);
                 saveToLocalStorage(model.AllTodos);
             } else {
                 throw new Error("This list item doesn't have an ID");
@@ -179,7 +192,8 @@ function renderTodos(todos) {
         for (var _iterator2 = todos[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
             var todo = _step2.value;
 
-            tempStorage.push(createListItem(todo.id, todo.value.trim(), todo.completed));
+            var determineElement = todo.completed ? 'del' : 'p';
+            tempStorage.push(createListItem(todo.id, todo.value.trim(), todo.completed, determineElement));
             input.value = '';
         }
     } catch (err) {
@@ -221,17 +235,28 @@ function deleteTodo(id, model, listElement) {
     return todo;
 }
 /**
- * Updates the global state, toggles the completed data attribute on a list item and replaces the p element with a del element
+ * Updates the global state, toggles the completed data attribute on a list item and replaces the p element with a del element if needed
  * @param e - A click event
  * @param model - The global state
+ * @param el -
  */
 function handleCompletedClick(e, model) {
+    var el = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+    console.log(el);
     var completeBtn = e.currentTarget;
     var listItem = completeBtn.parentElement;
     var id = listItem.dataset.id;
     if (id !== undefined) {
         var currentTodo = findTodo(id, model);
         currentTodo.completed = !currentTodo.completed;
+        // const determineElement = currentTodo.completed ? 'del' : 'p';
+        // const completedTodo = createListItem(
+        //   id,
+        //   currentTodo.value,
+        //   currentTodo.completed,
+        //   determineElement
+        // );
         update('CompleteTodo', model, currentTodo);
         toggleCompleteAttribute(listItem, currentTodo.completed);
     }

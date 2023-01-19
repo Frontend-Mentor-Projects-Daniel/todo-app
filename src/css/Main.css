@@ -272,6 +272,7 @@ main .text-wrapper {
   background-color: var(--bg-body);
   box-shadow: 0px -33px 50px -2px rgba(194, 195, 214, 0.5);
   border-radius: 5px;
+  isolation: isolate;
 }
 .todo-list .list-item {
   display: flex;
@@ -290,6 +291,7 @@ main .text-wrapper {
   }
 }
 .todo-list .complete-btn {
+  position: relative;
   flex-shrink: 0;
   display: flex;
   justify-content: center;
@@ -298,10 +300,21 @@ main .text-wrapper {
   height: 20px;
   width: 20px;
   border-radius: 50%;
+  background-color: white;
 }
 .todo-list .complete-btn:hover {
-  -o-border-image: var(--clr-primary-gradient);
-     border-image: var(--clr-primary-gradient);
+  border: none;
+}
+.todo-list .complete-btn:hover::after {
+  content: "";
+  position: absolute;
+  top: -1px;
+  bottom: -1px;
+  left: -1px;
+  right: -1px;
+  background: var(--clr-primary-gradient);
+  z-index: -1;
+  border-radius: 50%;
 }
 @media (min-width: 48rem) {
   .todo-list .complete-btn {
@@ -390,7 +403,7 @@ footer .attribution a {
 }
 
 .list-item[data-completed=true] .complete-btn {
-  border: 5px solid red;
+  background-image: var(--clr-primary-gradient);
 }
 
 .list-item[data-active=false] {
