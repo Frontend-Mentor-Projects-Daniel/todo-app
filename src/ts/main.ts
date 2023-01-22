@@ -10,6 +10,10 @@ const ul = document.querySelector('.list') as HTMLUListElement;
 const template = document.querySelector(
   '#example-list-item'
 ) as HTMLTemplateElement;
+const themeToggler = document.querySelector(
+  '.theme-toggler'
+) as HTMLButtonElement;
+const body = document.body as HTMLBodyElement;
 
 // ------------------------------------------------------------------------------
 //                                 TYPES
@@ -22,7 +26,12 @@ type Todo = {
 
 type validButton = 'delete-btn' | 'complete-btn' | 'not-a-button';
 
-type allowedElements = 'p' | 'ins' | 'del';
+type allowedElements = 'p' | 'del';
+
+type CurrentTheme = {
+  theme: string;
+  image: string;
+};
 
 // ------------------------------------------------------------------------------
 //                                 MODEL
@@ -82,7 +91,7 @@ function update(msg: Msg, model: Model, value: Todo): void {
 //                                   SCRIPTS
 //-------------------------------------------------------------------------------
 
-// GET TODOS FROM LOCAL STORAGE AND DISPLAY THEM
+// GET SAVED DATA FROM LOCAL STORAGE AND DISPLAY THEM
 ((model: Model) => {
   const getStoredTodos: string = getItemsFromLocalStorage('todos');
   const parseStoredTodos: Todo[] = parseTodos(getStoredTodos);
@@ -99,6 +108,13 @@ function update(msg: Msg, model: Model, value: Todo): void {
 
   renderTodos(model.AllTodos);
 
+  // display last used theme
+  const lastActiveTheme = JSON.parse(getItemsFromLocalStorage('theme'));
+  // getItemsFromLocalStorage returns an empty array if the key isn't found
+  if (lastActiveTheme.length !== 0) {
+    toggleTheme(lastActiveTheme);
+  }
+
   // update status bar to display the number of todos
   renderNumberOfTodos(model);
 })(init);
@@ -113,7 +129,7 @@ function update(msg: Msg, model: Model, value: Todo): void {
 
     if (!isUserInputEmpty) {
       update('AddTodo', model, createNewTodo);
-      saveToLocalStorage(model.AllTodos);
+      saveTodosToLocalStorage(model.AllTodos);
     }
 
     renderTodos(model.AllTodos);
@@ -138,7 +154,7 @@ function update(msg: Msg, model: Model, value: Todo): void {
       const todoThatShouldBeDeleted = findTodo(todoId, model);
       deleteTodo(todoThatShouldBeDeleted.id, model, listItem);
       update('RemoveTodo', model, todoThatShouldBeDeleted);
-      saveToLocalStorage(model.AllTodos);
+      saveTodosToLocalStorage(model.AllTodos);
 
       // when a todo is deleted, make sure that the status bar is updated
       renderNumberOfTodos(model);
@@ -166,7 +182,7 @@ function update(msg: Msg, model: Model, value: Todo): void {
           completed: false,
         };
         update('UpdateTodo', model, updatedTodo);
-        saveToLocalStorage(model.AllTodos);
+        saveTodosToLocalStorage(model.AllTodos);
       } else {
         const previousTodo = findTodo(listItemID, model);
         const previousText = previousTodo.value;
@@ -199,7 +215,7 @@ function update(msg: Msg, model: Model, value: Todo): void {
   }
 })(init);
 
-// MOVE STATUS BAR AND TEXT-WRAPPER WHEN THERE'RE NO TODOS
+// MOVE MAIN TAG WHEN THERE'RE NO TODOS
 ((model: Model) => {
   const config = { childList: true };
 
@@ -211,7 +227,11 @@ function update(msg: Msg, model: Model, value: Todo): void {
 })(init);
 
 // TOGGLE THEME
-((model: Model) => {})(init);
+((model: Model) => {
+  themeToggler.addEventListener('click', (e) => {
+    toggleTheme();
+  });
+})(init);
 
 // FILTER TASKS
 ((model: Model) => {})(init);
@@ -245,7 +265,7 @@ function update(msg: Msg, model: Model, value: Todo): void {
 
       completedTodos.forEach((todo) => {
         update('RemoveTodo', model, todo);
-        saveToLocalStorage(model.AllTodos);
+        saveTodosToLocalStorage(model.AllTodos);
         deleteTodo(todo.id, model, completedListItems[counter]);
         counter++;
       });
@@ -329,15 +349,6 @@ function handleCompletedClick(e: Event, model: Model, el = {}) {
     const currentTodo = findTodo(id, model);
     currentTodo.completed = !currentTodo.completed;
 
-    // const determineElement = currentTodo.completed ? 'del' : 'p';
-
-    // const completedTodo = createListItem(
-    //   id,
-    //   currentTodo.value,
-    //   currentTodo.completed,
-    //   determineElement
-    // );
-
     update('CompleteTodo', model, currentTodo);
 
     toggleCompleteAttribute(listItem, currentTodo.completed);
@@ -362,6 +373,75 @@ function renderNumberOfTodos(model: Model) {
       todo.textContent = `${unCompletedTodos.length} items left`;
     }
   });
+}
+
+function toggleTheme(theme?: CurrentTheme) {
+  const imageIcon = themeToggler.firstElementChild as HTMLImageElement;
+  // if a current theme exists, use that
+  if (theme != null) {
+    body.id = theme.theme;
+    imageIcon.setAttribute('src', theme.image);
+    return;
+  }
+
+  let currentTheme: CurrentTheme = {
+    theme: '',
+    image: '',
+  };
+
+  if (body.id === 'light') {
+    body.id = 'dark';
+    imageIcon.setAttribute('src', '/src/assets/images/icon-sun.svg');
+    const imageSrc = imageIcon.getAttribute('src') as string;
+    currentTheme = { theme: body.id, image: imageSrc };
+    saveThemeToLocalStorage(currentTheme);
+  } else {
+    body.id = 'light';
+    imageIcon.setAttribute('src', '/src/assets/images/icon-moon.svg');
+    const imageSrc = imageIcon.getAttribute('src') as string;
+    currentTheme = { theme: body.id, image: imageSrc };
+    saveThemeToLocalStorage(currentTheme);
+  }
+}
+
+// ------------------------------------------------------------------------------
+//                                   DATABASE
+//-------------------------------------------------------------------------------
+
+/**
+ * Saves users todos to local storage
+ * @param todos - The global state that should be saved to local storage
+ */
+function saveTodosToLocalStorage(todos: Todo[]) {
+  const todoToJson = JSON.stringify(todos);
+  localStorage.setItem('todos', todoToJson);
+}
+
+/**
+ * Saves the value of the body's id property and the src attribute of the image icon to local storage
+ * @param theme The current theme, light/dark && sun/moon-icon
+ */
+function saveThemeToLocalStorage(theme: CurrentTheme) {
+  localStorage.setItem('theme', JSON.stringify(theme));
+}
+
+/**
+ * Retrieves a JSON string from localStorage
+ * @param itemName - The key in the key:value pair of localStorage
+ * @returns {string} Either a string of the users todos or an empty array
+ */
+function getItemsFromLocalStorage(itemName: string): string {
+  const storage = localStorage.getItem(itemName);
+  return storage !== null ? storage : '[]';
+}
+
+/**
+ * Parses the users todo's
+ * @param item - Parses a string
+ * @returns {Todo[]} An array of objects of type Todo
+ */
+function parseTodos(item: string): Todo[] {
+  return JSON.parse(item);
 }
 
 // ------------------------------------------------------------------------------
@@ -453,34 +533,6 @@ function findTodo(id: string, model: Model): Todo {
   const matchingTodo = model.AllTodos.filter((todo) => todo.id === id);
 
   return matchingTodo[0];
-}
-
-/**
- * Saves users todos to local storage
- * @param todos - The global state that should be saved to local storage
- */
-function saveToLocalStorage(todos: Todo[]) {
-  const todoToJson = JSON.stringify(todos);
-  localStorage.setItem('todos', todoToJson);
-}
-
-/**
- * Retrieves a JSON string from localStorage
- * @param itemName - The key in the key:value pair of localStorage
- * @returns {string} Either a string of the users todos or an empty array
- */
-function getItemsFromLocalStorage(itemName: string): string {
-  const storage = localStorage.getItem(itemName);
-  return storage !== null ? storage : '[]';
-}
-
-/**
- * Parses the users todo's
- * @param item - Parses a string
- * @returns {Todo[]} An array of objects of type Todo
- */
-function parseTodos(item: string): Todo[] {
-  return JSON.parse(item);
 }
 
 /**
@@ -593,7 +645,7 @@ function mutateCompletedTodos(mutationList: MutationRecord[], model: Model) {
               listItem.dataset.completed = String(opposite);
 
               update('CompleteTodo', model, currentTodo);
-              saveToLocalStorage(model.AllTodos);
+              saveTodosToLocalStorage(model.AllTodos);
             }
           });
         });
