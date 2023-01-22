@@ -154,7 +154,7 @@ function update(msg, model, value) {
     var config = { childList: true };
     // Create an observer instance linked to the callback function
     var observer = new MutationObserver(function (mutationList) {
-        completeTodo(mutationList, model);
+        mutateCompletedTodos(mutationList, model);
     });
     // Start observing the target node for configured mutations
     observer.observe(ul, config);
@@ -168,7 +168,13 @@ function update(msg, model, value) {
     }
 })(init);
 // REMOVE STATUS BAR AND TEXT-WRAPPER WHEN THERE'RE NO TODOS
-(function (model) {})(init);
+(function (model) {
+    var config = { childList: true };
+    var observer = new MutationObserver(function (mutationList) {
+        mutateStatusBar(mutationList, model);
+    });
+    observer.observe(ul, config);
+})(init);
 // TOGGLE THEME
 (function (model) {})(init);
 // FILTER TASKS
@@ -179,7 +185,7 @@ function update(msg, model, value) {
     var config = { childList: true, subtree: true };
     // Create an observer instance linked to the callback function
     var observer = new MutationObserver(function (mutationList) {
-        updateStatusBar(mutationList, model);
+        mutateRemainingTodosDisplay(mutationList, model);
     });
     // Start observing the target node for configured mutations
     observer.observe(ul, config);
@@ -434,7 +440,12 @@ function createDelElement(text) {
 // ------------------------------------------------------------------------------
 //                             MUTATION OBSERVERS
 //-------------------------------------------------------------------------------
-function completeTodo(mutationList, model) {
+/**
+ *  Mutation that should occur to a todo list item when the complete button is clicked
+ * @param mutationList The data associated with each mutation
+ * @param model Used because the global state of the todos is required
+ */
+function mutateCompletedTodos(mutationList, model) {
     // check the type of mutation
     var _iteratorNormalCompletion3 = true;
     var _didIteratorError3 = false;
@@ -492,7 +503,12 @@ function completeTodo(mutationList, model) {
         }
     }
 }
-function updateStatusBar(mutationList, model) {
+/**
+ *  Mutation that should occur the display on the status bar that shows the remaining un-completed todos
+ * @param mutationList The data associated with each mutation
+ * @param model Used because the global state of the todos is required
+ */
+function mutateRemainingTodosDisplay(mutationList, model) {
     var _iteratorNormalCompletion4 = true;
     var _didIteratorError4 = false;
     var _iteratorError4 = undefined;
@@ -518,6 +534,44 @@ function updateStatusBar(mutationList, model) {
         } finally {
             if (_didIteratorError4) {
                 throw _iteratorError4;
+            }
+        }
+    }
+}
+/**
+ *  Mutation that should occur to the status bar when they're no todos left
+ * @param mutationList The data associated with each mutation
+ * @param model Used because the global state of the todos is required
+ */
+function mutateStatusBar(mutationList, model) {
+    var _iteratorNormalCompletion5 = true;
+    var _didIteratorError5 = false;
+    var _iteratorError5 = undefined;
+
+    try {
+        for (var _iterator5 = mutationList[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+            var mutation = _step5.value;
+
+            if (mutation.type === 'childList') {
+                var main = document.querySelector('main');
+                if (model.AllTodos.length === 0 && main !== null) {
+                    main.style.transform = 'translateY(0)';
+                } else {
+                    main.style.transform = 'translateY(-24px)';
+                }
+            }
+        }
+    } catch (err) {
+        _didIteratorError5 = true;
+        _iteratorError5 = err;
+    } finally {
+        try {
+            if (!_iteratorNormalCompletion5 && _iterator5.return) {
+                _iterator5.return();
+            }
+        } finally {
+            if (_didIteratorError5) {
+                throw _iteratorError5;
             }
         }
     }

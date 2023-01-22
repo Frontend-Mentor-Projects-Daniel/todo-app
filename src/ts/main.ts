@@ -183,7 +183,7 @@ function update(msg: Msg, model: Model, value: Todo): void {
 
   // Create an observer instance linked to the callback function
   const observer = new MutationObserver((mutationList) => {
-    completeTodo(mutationList, model);
+    mutateCompletedTodos(mutationList, model);
   });
 
   // Start observing the target node for configured mutations
@@ -199,8 +199,16 @@ function update(msg: Msg, model: Model, value: Todo): void {
   }
 })(init);
 
-// REMOVE STATUS BAR AND TEXT-WRAPPER WHEN THERE'RE NO TODOS
-((model: Model) => {})(init);
+// MOVE STATUS BAR AND TEXT-WRAPPER WHEN THERE'RE NO TODOS
+((model: Model) => {
+  const config = { childList: true };
+
+  const observer = new MutationObserver((mutationList) => {
+    mutateStatusBar(mutationList, model);
+  });
+
+  observer.observe(ul, config);
+})(init);
 
 // TOGGLE THEME
 ((model: Model) => {})(init);
@@ -215,7 +223,7 @@ function update(msg: Msg, model: Model, value: Todo): void {
 
   // Create an observer instance linked to the callback function
   const observer = new MutationObserver((mutationList) => {
-    updateStatusBar(mutationList, model);
+    mutateRemainingTodosDisplay(mutationList, model);
   });
 
   // Start observing the target node for configured mutations
@@ -509,7 +517,12 @@ function createDelElement(text: string): HTMLModElement {
 // ------------------------------------------------------------------------------
 //                             MUTATION OBSERVERS
 //-------------------------------------------------------------------------------
-function completeTodo(mutationList: MutationRecord[], model: Model) {
+/**
+ *  Mutation that should occur to a todo list item when the complete button is clicked
+ * @param mutationList The data associated with each mutation
+ * @param model Used because the global state of the todos is required
+ */
+function mutateCompletedTodos(mutationList: MutationRecord[], model: Model) {
   // check the type of mutation
   for (const mutation of mutationList) {
     if (mutation.type === 'childList') {
@@ -553,7 +566,15 @@ function completeTodo(mutationList: MutationRecord[], model: Model) {
   }
 }
 
-function updateStatusBar(mutationList: MutationRecord[], model: Model) {
+/**
+ *  Mutation that should occur the display on the status bar that shows the remaining un-completed todos
+ * @param mutationList The data associated with each mutation
+ * @param model Used because the global state of the todos is required
+ */
+function mutateRemainingTodosDisplay(
+  mutationList: MutationRecord[],
+  model: Model
+) {
   for (const mutation of mutationList) {
     if (mutation.type === 'childList') {
       if (
@@ -561,6 +582,25 @@ function updateStatusBar(mutationList: MutationRecord[], model: Model) {
         mutation.addedNodes[0] instanceof HTMLParagraphElement
       ) {
         renderNumberOfTodos(model);
+      }
+    }
+  }
+}
+
+/**
+ *  Mutation that should occur to the status bar when they're no todos left
+ * @param mutationList The data associated with each mutation
+ * @param model Used because the global state of the todos is required
+ */
+function mutateStatusBar(mutationList: MutationRecord[], model: Model) {
+  for (const mutation of mutationList) {
+    if (mutation.type === 'childList') {
+      const main = document.querySelector('main') as HTMLElement;
+
+      if (model.AllTodos.length === 0 && main !== null) {
+        main.style.transform = 'translateY(0)';
+      } else {
+        main.style.transform = 'translateY(-24px)';
       }
     }
   }
