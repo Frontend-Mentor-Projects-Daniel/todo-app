@@ -4,6 +4,8 @@
 //                                 DOM NODES
 //-------------------------------------------------------------------------------
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 var todos = document.querySelectorAll('.todo-list-item');
 var form = document.querySelector('.create-bar-form');
 var input = document.querySelector('.create-bar');
@@ -167,7 +169,7 @@ function update(msg, model, value) {
         shouldDelete.remove();
     }
 })(init);
-// REMOVE STATUS BAR AND TEXT-WRAPPER WHEN THERE'RE NO TODOS
+// MOVE STATUS BAR AND TEXT-WRAPPER WHEN THERE'RE NO TODOS
 (function (model) {
     var config = { childList: true };
     var observer = new MutationObserver(function (mutationList) {
@@ -191,7 +193,24 @@ function update(msg, model, value) {
     observer.observe(ul, config);
 })(init);
 // CLEAR ALL COMPLETED TASKS
-(function (model) {})(init);
+(function (model) {
+    var clearButtons = document.querySelectorAll('.clear-btn');
+    clearButtons.forEach(function (button) {
+        button.addEventListener('click', function (e) {
+            var completedListItems = getCompletedListItems();
+            var counter = 0;
+            var completedTodos = model.AllTodos.filter(function (todo) {
+                return todo.completed;
+            });
+            completedTodos.forEach(function (todo) {
+                update('RemoveTodo', model, todo);
+                saveToLocalStorage(model.AllTodos);
+                deleteTodo(todo.id, model, completedListItems[counter]);
+                counter++;
+            });
+        });
+    });
+})(init);
 // DRAG AND DROP TASKS
 (function (model) {})(init);
 // ------------------------------------------------------------------------------
@@ -436,6 +455,18 @@ function createDelElement(text) {
     del.textContent = text;
     del.className = 'list-item-text';
     return del;
+}
+/**
+ * Selects all of the list items todos from the DOM, turns them into an array and returns the completed ones
+ * @returns An array of List Item todos
+ */
+function getCompletedListItems() {
+    var listItems = document.querySelectorAll('.list-item');
+    var listItemsArray = [].concat(_toConsumableArray(listItems));
+    var completedListItems = listItemsArray.filter(function (li) {
+        return li.dataset.completed === 'true';
+    });
+    return completedListItems;
 }
 // ------------------------------------------------------------------------------
 //                             MUTATION OBSERVERS

@@ -231,7 +231,27 @@ function update(msg: Msg, model: Model, value: Todo): void {
 })(init);
 
 // CLEAR ALL COMPLETED TASKS
-((model: Model) => {})(init);
+((model: Model) => {
+  const clearButtons = document.querySelectorAll(
+    '.clear-btn'
+  ) as NodeListOf<HTMLButtonElement>;
+
+  clearButtons.forEach((button) => {
+    button.addEventListener('click', (e) => {
+      const completedListItems: HTMLLIElement[] = getCompletedListItems();
+      let counter = 0;
+
+      const completedTodos = model.AllTodos.filter((todo) => todo.completed);
+
+      completedTodos.forEach((todo) => {
+        update('RemoveTodo', model, todo);
+        saveToLocalStorage(model.AllTodos);
+        deleteTodo(todo.id, model, completedListItems[counter]);
+        counter++;
+      });
+    });
+  });
+})(init);
 
 // DRAG AND DROP TASKS
 ((model: Model) => {})(init);
@@ -512,6 +532,22 @@ function createDelElement(text: string): HTMLModElement {
   del.className = 'list-item-text';
 
   return del;
+}
+
+/**
+ * Selects all of the list items todos from the DOM, turns them into an array and returns the completed ones
+ * @returns An array of List Item todos
+ */
+function getCompletedListItems() {
+  const listItems = document.querySelectorAll(
+    '.list-item'
+  ) as NodeListOf<HTMLLIElement>;
+  const listItemsArray: HTMLLIElement[] = [...listItems];
+  const completedListItems = listItemsArray.filter(
+    (li) => li.dataset.completed === 'true'
+  );
+
+  return completedListItems;
 }
 
 // ------------------------------------------------------------------------------
