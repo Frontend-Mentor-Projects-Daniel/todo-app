@@ -39,11 +39,13 @@
       <form class="create-bar-form center">
         <label class="sr-only" for="create-bar">Create a task</label>
         <input
+          required
           name="create-bar"
           id="create-bar"
           class="create-bar"
           type="text"
           placeholder="Create a new todo..."
+          pattern="^(?=\S)[\S\s]*$"
         />
       </form>
     </header>

@@ -1,16 +1,5 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
-// WHEN USER CLICKS ON COMPLETED BUTTON, ADD GRADIENT
-// get the id of the todo
-// find the specific todo
-// change the completed property to true
-// Save the state
-// WHEN USER CLICKS ON COMPLETED BUTTON, ADD LINE THROUGH
-// get the id of the todo
-// find the specific todo
-// change the p tag to a del tag
-// -> This will probably require some updating of the renderListItem function
-// -> May also be better to create a function to render a single todo rather than re-render all of them
 // ------------------------------------------------------------------------------
 //                                 DOM NODES
 //-------------------------------------------------------------------------------
@@ -26,7 +15,6 @@ var template = document.querySelector('#example-list-item');
 var init = {
     AllTodos: []
 };
-Object.freeze(init);
 function update(msg, model, value) {
     switch (msg) {
         case 'AddTodo':
@@ -65,7 +53,7 @@ function update(msg, model, value) {
 (function (model) {
     var getStoredTodos = getItemsFromLocalStorage('todos');
     var parseStoredTodos = parseTodos(getStoredTodos);
-    // if there're no previous todo's, create example todo
+    // if there're no previous todo's, create example todo else update the state to contain all the stored todos
     if (parseStoredTodos.length === 0) {
         var newTodo = renderListItemNode(template);
         update('AddTodo', model, newTodo);
@@ -96,14 +84,6 @@ function update(msg, model, value) {
         }
     }
     renderTodos(model.AllTodos);
-    // add event listener to initial todo so that it can be set to complete as well
-    var allTodos = document.querySelectorAll('.complete-btn');
-    allTodos.forEach(function (todo) {
-        todo.addEventListener('click', function (e) {
-            // handleCompletedClick(e, model);
-            saveToLocalStorage(model.AllTodos);
-        });
-    });
 })(init);
 // CREATE NEW TODOS
 (function (model) {
@@ -122,14 +102,14 @@ function update(msg, model, value) {
 // DELETE TODOS
 (function (model) {
     ul.addEventListener('click', function (e) {
-        var xImage = e.target;
-        var button = xImage.parentElement;
-        var li = button.parentElement;
-        var todoId = li.dataset.id;
+        var deleteIconImage = e.target;
+        var button = deleteIconImage.parentElement;
+        var listItem = button.parentElement;
+        var todoId = listItem.dataset.id;
         var isDeleteOrUpdateBtn = checkTypeOfButton(button);
         if (isDeleteOrUpdateBtn === 'delete-btn') {
             var todoThatShouldBeDeleted = findTodo(todoId, model);
-            deleteTodo(todoThatShouldBeDeleted.id, model, li);
+            deleteTodo(todoThatShouldBeDeleted.id, model, listItem);
             update('RemoveTodo', model, todoThatShouldBeDeleted);
             saveToLocalStorage(model.AllTodos);
         }
@@ -149,15 +129,7 @@ function update(msg, model, value) {
                     value: text,
                     completed: false
                 };
-                var newChild = document.createElement('del');
-                newChild.className = 'list-item-text';
-                newChild.textContent = text;
-                var oldChild = target;
-                var parent = listItem;
-                var replacementInfo = { parent: parent, newChild: newChild, oldChild: oldChild };
-                // console.log(replacementInfo);
                 update('UpdateTodo', model, updatedTodo);
-                // handleCompletedClick(e, model, replacementInfo);
                 saveToLocalStorage(model.AllTodos);
             } else {
                 throw new Error("This list item doesn't have an ID");
@@ -171,6 +143,7 @@ function update(msg, model, value) {
     var config = { childList: true };
     // Callback function to execute when mutations are observed
     var callback = function callback(mutationList) {
+        // check the type of mutation
         var _iteratorNormalCompletion2 = true;
         var _didIteratorError2 = false;
         var _iteratorError2 = undefined;
@@ -180,26 +153,26 @@ function update(msg, model, value) {
                 var mutation = _step2.value;
 
                 if (mutation.type === 'childList') {
+                    // check to see if any mutation has occurred
                     if (mutation.addedNodes.length !== 0) {
                         var allCompleteButtons = document.querySelectorAll('.complete-btn');
                         allCompleteButtons.forEach(function (button) {
+                            // remove any previous event listeners before adding anymore in order to avoid any strange behavior
                             button.removeEventListener('click', function () {});
                             button.addEventListener('click', function () {
+                                // get the listItem, its first child which will either by a p tag or a del tag and its text content
                                 var listItem = button.parentElement;
                                 var pOrDel = listItem.children[1];
                                 var todoText = pOrDel.textContent;
-                                var del = document.createElement('del');
-                                del.textContent = todoText;
-                                del.className = 'list-item-text';
-                                var p = document.createElement('p');
-                                p.textContent = todoText;
-                                p.className = 'list-item-text';
-                                p.setAttribute('contenteditable', 'true');
+                                // create a new element that will be inserted depending on whether the todo is completed or not
+                                var del = createDelElement(todoText);
+                                var p = createParagraphElement(todoText);
                                 if (pOrDel instanceof HTMLParagraphElement) {
                                     listItem.replaceChild(del, pOrDel);
                                 } else {
                                     listItem.replaceChild(p, pOrDel);
                                 }
+                                // update the completed status of the todo
                                 if (listItem.dataset.id != null) {
                                     var currentTodo = findTodo(listItem.dataset.id, model);
                                     var opposite = !currentTodo.completed;
@@ -231,7 +204,7 @@ function update(msg, model, value) {
     var observer = new MutationObserver(callback);
     // Start observing the target node for configured mutations
     observer.observe(ul, config);
-    // add a mutation so that the mutationObserver will automatically kick in
+    // add a mutation so that the mutationObserver code will automatically kick in
     var newLi = document.createElement('li');
     newLi.dataset.id = '000';
     var shouldDelete = newLi;
@@ -427,7 +400,8 @@ function parseTodos(item) {
     return JSON.parse(item);
 }
 /**
- * Simply for taking out the bloat from the script itself
+ * Creates a newTodo out of the example todo
+ * @param template - The template to clone and turn into a newTodo object
  * @returns The example Todo
  */
 function renderListItemNode(template) {
@@ -443,6 +417,29 @@ function renderListItemNode(template) {
         completed: false
     };
     return newTodo;
+}
+/**
+ * Creates a <p> element
+ * @param text - The text content of the element
+ * @returns A paragraph element which will be the todo itself. It can be edited
+ */
+function createParagraphElement(text) {
+    var p = document.createElement('p');
+    p.textContent = text;
+    p.className = 'list-item-text';
+    p.setAttribute('contenteditable', 'true');
+    return p;
+}
+/**
+ * Creates a <del> element
+ * @param text - The text content of the element
+ * @returns A del element which will be the todo itself. It cannot be edited
+ */
+function createDelElement(text) {
+    var del = document.createElement('del');
+    del.textContent = text;
+    del.className = 'list-item-text';
+    return del;
 }
 
 },{}]},{},[1])

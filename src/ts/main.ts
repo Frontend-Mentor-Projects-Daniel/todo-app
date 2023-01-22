@@ -1,19 +1,5 @@
-// WHEN USER CLICKS ON COMPLETED BUTTON, ADD GRADIENT
-// get the id of the todo
-// find the specific todo
-// change the completed property to true
-// Save the state
-
-// WHEN USER CLICKS ON COMPLETED BUTTON, ADD LINE THROUGH
-// get the id of the todo
-// find the specific todo
-// change the p tag to a del tag
-// -> This will probably require some updating of the renderListItem function
-// -> May also be better to create a function to render a single todo rather than re-render all of them
-
 // ------------------------------------------------------------------------------
 //                                 DOM NODES
-
 //-------------------------------------------------------------------------------
 const todos = document.querySelectorAll(
   '.todo-list-item'
@@ -51,7 +37,6 @@ type Model = {
 const init: Model = {
   AllTodos: [],
 };
-Object.freeze(init);
 
 // ------------------------------------------------------------------------------
 //                             UPDATE FUNCTION
@@ -102,7 +87,7 @@ function update(msg: Msg, model: Model, value: Todo): void {
   const getStoredTodos: string = getItemsFromLocalStorage('todos');
   const parseStoredTodos: Todo[] = parseTodos(getStoredTodos);
 
-  // if there're no previous todo's, create example todo
+  // if there're no previous todo's, create example todo else update the state to contain all the stored todos
   if (parseStoredTodos.length === 0) {
     const newTodo = renderListItemNode(template);
     update('AddTodo', model, newTodo);
@@ -113,15 +98,6 @@ function update(msg: Msg, model: Model, value: Todo): void {
   }
 
   renderTodos(model.AllTodos);
-
-  // add event listener to initial todo so that it can be set to complete as well
-  const allTodos = document.querySelectorAll('.complete-btn');
-  allTodos.forEach((todo) => {
-    todo.addEventListener('click', (e) => {
-      // handleCompletedClick(e, model);
-      saveToLocalStorage(model.AllTodos);
-    });
-  });
 })(init);
 
 // CREATE NEW TODOS
@@ -144,17 +120,17 @@ function update(msg: Msg, model: Model, value: Todo): void {
 // DELETE TODOS
 ((model: Model) => {
   ul.addEventListener('click', (e) => {
-    const xImage = e.target as HTMLImageElement;
-    const button = xImage.parentElement as HTMLButtonElement;
+    const deleteIconImage = e.target as HTMLImageElement;
+    const button = deleteIconImage.parentElement as HTMLButtonElement;
 
-    const li = button.parentElement as HTMLLIElement;
+    const listItem = button.parentElement as HTMLLIElement;
 
-    const todoId = li.dataset.id as string;
+    const todoId = listItem.dataset.id as string;
     const isDeleteOrUpdateBtn = checkTypeOfButton(button);
 
     if (isDeleteOrUpdateBtn === 'delete-btn') {
       const todoThatShouldBeDeleted = findTodo(todoId, model);
-      deleteTodo(todoThatShouldBeDeleted.id, model, li);
+      deleteTodo(todoThatShouldBeDeleted.id, model, listItem);
       update('RemoveTodo', model, todoThatShouldBeDeleted);
       saveToLocalStorage(model.AllTodos);
     }
@@ -177,18 +153,7 @@ function update(msg: Msg, model: Model, value: Todo): void {
           value: text,
           completed: false,
         };
-
-        const newChild = document.createElement('del');
-        newChild.className = 'list-item-text';
-        newChild.textContent = text;
-        const oldChild = target;
-        const parent = listItem;
-
-        const replacementInfo = { parent, newChild, oldChild };
-        // console.log(replacementInfo);
-
         update('UpdateTodo', model, updatedTodo);
-        // handleCompletedClick(e, model, replacementInfo);
         saveToLocalStorage(model.AllTodos);
       } else {
         throw new Error("This list item doesn't have an ID");
@@ -203,28 +168,27 @@ function update(msg: Msg, model: Model, value: Todo): void {
   const config = { childList: true };
 
   // Callback function to execute when mutations are observed
-  const callback = (mutationList) => {
+  const callback = (mutationList: MutationRecord[]) => {
+    // check the type of mutation
     for (const mutation of mutationList) {
       if (mutation.type === 'childList') {
+        // check to see if any mutation has occurred
         if (mutation.addedNodes.length !== 0) {
           const allCompleteButtons = document.querySelectorAll('.complete-btn');
 
           allCompleteButtons.forEach((button) => {
+            // remove any previous event listeners before adding anymore in order to avoid any strange behavior
             button.removeEventListener('click', () => {});
 
             button.addEventListener('click', () => {
+              // get the listItem, its first child which will either by a p tag or a del tag and its text content
               const listItem = button.parentElement as HTMLLIElement;
-              const pOrDel = listItem.children[1] as HTMLParagraphElement;
-              const todoText = pOrDel.textContent;
+              const pOrDel = listItem.children[1];
+              const todoText = pOrDel.textContent as string;
 
-              const del = document.createElement('del');
-              del.textContent = todoText;
-              del.className = 'list-item-text';
-
-              const p = document.createElement('p');
-              p.textContent = todoText;
-              p.className = 'list-item-text';
-              p.setAttribute('contenteditable', 'true');
+              // create a new element that will be inserted depending on whether the todo is completed or not
+              const del = createDelElement(todoText);
+              const p = createParagraphElement(todoText);
 
               if (pOrDel instanceof HTMLParagraphElement) {
                 listItem.replaceChild(del, pOrDel);
@@ -232,6 +196,7 @@ function update(msg: Msg, model: Model, value: Todo): void {
                 listItem.replaceChild(p, pOrDel);
               }
 
+              // update the completed status of the todo
               if (listItem.dataset.id != null) {
                 const currentTodo = findTodo(listItem.dataset.id, model);
                 const opposite = !currentTodo.completed;
@@ -253,7 +218,7 @@ function update(msg: Msg, model: Model, value: Todo): void {
   // Start observing the target node for configured mutations
   observer.observe(ul, config);
 
-  // add a mutation so that the mutationObserver will automatically kick in
+  // add a mutation so that the mutationObserver code will automatically kick in
   const newLi = document.createElement('li') as HTMLLIElement;
   newLi.dataset.id = '000';
   const shouldDelete = newLi;
@@ -474,7 +439,8 @@ function parseTodos(item: string): Todo[] {
 }
 
 /**
- * Simply for taking out the bloat from the script itself
+ * Creates a newTodo out of the example todo
+ * @param template - The template to clone and turn into a newTodo object
  * @returns The example Todo
  */
 function renderListItemNode(template: HTMLTemplateElement): Todo {
@@ -494,4 +460,31 @@ function renderListItemNode(template: HTMLTemplateElement): Todo {
   };
 
   return newTodo;
+}
+
+/**
+ * Creates a <p> element
+ * @param text - The text content of the element
+ * @returns A paragraph element which will be the todo itself. It can be edited
+ */
+function createParagraphElement(text: string): HTMLParagraphElement {
+  const p = document.createElement('p');
+  p.textContent = text;
+  p.className = 'list-item-text';
+  p.setAttribute('contenteditable', 'true');
+
+  return p;
+}
+
+/**
+ * Creates a <del> element
+ * @param text - The text content of the element
+ * @returns A del element which will be the todo itself. It cannot be edited
+ */
+function createDelElement(text: string): HTMLModElement {
+  const del = document.createElement('del');
+  del.textContent = text;
+  del.className = 'list-item-text';
+
+  return del;
 }
