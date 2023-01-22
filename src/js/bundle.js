@@ -84,6 +84,8 @@ function update(msg, model, value) {
         }
     }
     renderTodos(model.AllTodos);
+    // update status bar to display the number of todos
+    renderNumberOfTodos(model);
 })(init);
 // CREATE NEW TODOS
 (function (model) {
@@ -97,6 +99,8 @@ function update(msg, model, value) {
             saveToLocalStorage(model.AllTodos);
         }
         renderTodos(model.AllTodos);
+        // when a todo is added, make sure that the status bar is updated
+        renderNumberOfTodos(model);
     });
 })(init);
 // DELETE TODOS
@@ -112,6 +116,8 @@ function update(msg, model, value) {
             deleteTodo(todoThatShouldBeDeleted.id, model, listItem);
             update('RemoveTodo', model, todoThatShouldBeDeleted);
             saveToLocalStorage(model.AllTodos);
+            // when a todo is deleted, make sure that the status bar is updated
+            renderNumberOfTodos(model);
         }
     });
 })(init);
@@ -146,67 +152,10 @@ function update(msg, model, value) {
 (function (model) {
     // Options for the observer (which mutations to observe)
     var config = { childList: true };
-    // Callback function to execute when mutations are observed
-    var callback = function callback(mutationList) {
-        // check the type of mutation
-        var _iteratorNormalCompletion2 = true;
-        var _didIteratorError2 = false;
-        var _iteratorError2 = undefined;
-
-        try {
-            for (var _iterator2 = mutationList[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-                var mutation = _step2.value;
-
-                if (mutation.type === 'childList') {
-                    // check to see if any mutation has occurred
-                    if (mutation.addedNodes.length !== 0) {
-                        var allCompleteButtons = document.querySelectorAll('.complete-btn');
-                        allCompleteButtons.forEach(function (button) {
-                            // remove any previous event listeners before adding anymore in order to avoid any strange behavior
-                            button.removeEventListener('click', function () {});
-                            button.addEventListener('click', function () {
-                                // get the listItem, its first child which will either by a p tag or a del tag and its text content
-                                var listItem = button.parentElement;
-                                var pOrDel = listItem.children[1];
-                                var todoText = pOrDel.textContent;
-                                // create a new element that will be inserted depending on whether the todo is completed or not
-                                var del = createDelElement(todoText);
-                                var p = createParagraphElement(todoText);
-                                if (pOrDel instanceof HTMLParagraphElement) {
-                                    listItem.replaceChild(del, pOrDel);
-                                } else {
-                                    listItem.replaceChild(p, pOrDel);
-                                }
-                                // update the completed status of the todo
-                                if (listItem.dataset.id != null) {
-                                    var currentTodo = findTodo(listItem.dataset.id, model);
-                                    var opposite = !currentTodo.completed;
-                                    listItem.dataset.completed = String(opposite);
-                                    update('CompleteTodo', model, currentTodo);
-                                    saveToLocalStorage(model.AllTodos);
-                                }
-                            });
-                        });
-                    }
-                }
-            }
-        } catch (err) {
-            _didIteratorError2 = true;
-            _iteratorError2 = err;
-        } finally {
-            try {
-                if (!_iteratorNormalCompletion2 && _iterator2.return) {
-                    _iterator2.return();
-                }
-            } finally {
-                if (_didIteratorError2) {
-                    throw _iteratorError2;
-                }
-            }
-        }
-    };
     // Create an observer instance linked to the callback function
-    var observer = new MutationObserver(callback);
+    var observer = new MutationObserver(function (mutationList) {
+        completeTodo(mutationList, model);
+    });
     // Start observing the target node for configured mutations
     observer.observe(ul, config);
     // add a mutation so that the mutationObserver code will automatically kick in
@@ -218,7 +167,26 @@ function update(msg, model, value) {
         shouldDelete.remove();
     }
 })(init);
-// SET FILTER
+// REMOVE STATUS BAR AND TEXT-WRAPPER WHEN THERE'RE NO TODOS
+(function (model) {})(init);
+// TOGGLE THEME
+(function (model) {})(init);
+// FILTER TASKS
+(function (model) {})(init);
+// DISPLAY NUMBER OF UN-COMPLETED TODOS
+(function (model) {
+    // Options for the observer (which mutations to observe)
+    var config = { childList: true, subtree: true };
+    // Create an observer instance linked to the callback function
+    var observer = new MutationObserver(function (mutationList) {
+        updateStatusBar(mutationList, model);
+    });
+    // Start observing the target node for configured mutations
+    observer.observe(ul, config);
+})(init);
+// CLEAR ALL COMPLETED TASKS
+(function (model) {})(init);
+// DRAG AND DROP TASKS
 (function (model) {})(init);
 // ------------------------------------------------------------------------------
 //                              VIEW FUNCTIONS
@@ -230,29 +198,29 @@ function update(msg, model, value) {
 function renderTodos(todos) {
     ul.innerHTML = '';
     var tempStorage = [];
-    var _iteratorNormalCompletion3 = true;
-    var _didIteratorError3 = false;
-    var _iteratorError3 = undefined;
+    var _iteratorNormalCompletion2 = true;
+    var _didIteratorError2 = false;
+    var _iteratorError2 = undefined;
 
     try {
-        for (var _iterator3 = todos[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-            var todo = _step3.value;
+        for (var _iterator2 = todos[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+            var todo = _step2.value;
 
             var determineElement = todo.completed ? 'del' : 'p';
             tempStorage.push(createListItem(todo.id, todo.value.trim(), todo.completed, determineElement));
             input.value = '';
         }
     } catch (err) {
-        _didIteratorError3 = true;
-        _iteratorError3 = err;
+        _didIteratorError2 = true;
+        _iteratorError2 = err;
     } finally {
         try {
-            if (!_iteratorNormalCompletion3 && _iterator3.return) {
-                _iterator3.return();
+            if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                _iterator2.return();
             }
         } finally {
-            if (_didIteratorError3) {
-                throw _iteratorError3;
+            if (_didIteratorError2) {
+                throw _iteratorError2;
             }
         }
     }
@@ -305,6 +273,23 @@ function handleCompletedClick(e, model) {
         update('CompleteTodo', model, currentTodo);
         toggleCompleteAttribute(listItem, currentTodo.completed);
     }
+}
+/**
+ * Changes the number of todos in the display bar(s)
+ * @param model The current state which should know which todos are currently completed
+ */
+function renderNumberOfTodos(model) {
+    var todosLeft = document.querySelectorAll('.items-left p');
+    var unCompletedTodos = model.AllTodos.filter(function (todo) {
+        return !todo.completed;
+    });
+    todosLeft.forEach(function (todo) {
+        if (unCompletedTodos.length === 1) {
+            todo.textContent = unCompletedTodos.length + ' item left';
+        } else {
+            todo.textContent = unCompletedTodos.length + ' items left';
+        }
+    });
 }
 // ------------------------------------------------------------------------------
 //                              HELPER FUNCTIONS
@@ -445,6 +430,97 @@ function createDelElement(text) {
     del.textContent = text;
     del.className = 'list-item-text';
     return del;
+}
+// ------------------------------------------------------------------------------
+//                             MUTATION OBSERVERS
+//-------------------------------------------------------------------------------
+function completeTodo(mutationList, model) {
+    // check the type of mutation
+    var _iteratorNormalCompletion3 = true;
+    var _didIteratorError3 = false;
+    var _iteratorError3 = undefined;
+
+    try {
+        for (var _iterator3 = mutationList[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+            var mutation = _step3.value;
+
+            if (mutation.type === 'childList') {
+                // check to see if any mutation has occurred
+                if (mutation.addedNodes.length !== 0) {
+                    var allCompleteButtons = document.querySelectorAll('.complete-btn');
+                    allCompleteButtons.forEach(function (button) {
+                        // remove any previous event listeners before adding anymore in order to avoid any strange behavior
+                        button.removeEventListener('click', function () {});
+                        button.addEventListener('click', function () {
+                            // get the listItem, its first child which will either by a p tag or a del tag and its text content
+                            var listItem = button.parentElement;
+                            var pOrDel = listItem.children[1];
+                            var todoText = pOrDel.textContent;
+                            // create a new element that will be inserted depending on whether the todo is completed or not
+                            var del = createDelElement(todoText);
+                            var p = createParagraphElement(todoText);
+                            if (pOrDel instanceof HTMLParagraphElement) {
+                                listItem.replaceChild(del, pOrDel);
+                            } else {
+                                listItem.replaceChild(p, pOrDel);
+                            }
+                            // update the completed status of the todo
+                            if (listItem.dataset.id != null) {
+                                var currentTodo = findTodo(listItem.dataset.id, model);
+                                var opposite = !currentTodo.completed;
+                                listItem.dataset.completed = String(opposite);
+                                update('CompleteTodo', model, currentTodo);
+                                saveToLocalStorage(model.AllTodos);
+                            }
+                        });
+                    });
+                }
+            }
+        }
+    } catch (err) {
+        _didIteratorError3 = true;
+        _iteratorError3 = err;
+    } finally {
+        try {
+            if (!_iteratorNormalCompletion3 && _iterator3.return) {
+                _iterator3.return();
+            }
+        } finally {
+            if (_didIteratorError3) {
+                throw _iteratorError3;
+            }
+        }
+    }
+}
+function updateStatusBar(mutationList, model) {
+    var _iteratorNormalCompletion4 = true;
+    var _didIteratorError4 = false;
+    var _iteratorError4 = undefined;
+
+    try {
+        for (var _iterator4 = mutationList[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+            var mutation = _step4.value;
+
+            if (mutation.type === 'childList') {
+                if (mutation.addedNodes[0] instanceof HTMLModElement || mutation.addedNodes[0] instanceof HTMLParagraphElement) {
+                    renderNumberOfTodos(model);
+                }
+            }
+        }
+    } catch (err) {
+        _didIteratorError4 = true;
+        _iteratorError4 = err;
+    } finally {
+        try {
+            if (!_iteratorNormalCompletion4 && _iterator4.return) {
+                _iterator4.return();
+            }
+        } finally {
+            if (_didIteratorError4) {
+                throw _iteratorError4;
+            }
+        }
+    }
 }
 
 },{}]},{},[1])

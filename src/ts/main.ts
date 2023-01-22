@@ -98,6 +98,9 @@ function update(msg: Msg, model: Model, value: Todo): void {
   }
 
   renderTodos(model.AllTodos);
+
+  // update status bar to display the number of todos
+  renderNumberOfTodos(model);
 })(init);
 
 // CREATE NEW TODOS
@@ -114,6 +117,9 @@ function update(msg: Msg, model: Model, value: Todo): void {
     }
 
     renderTodos(model.AllTodos);
+
+    // when a todo is added, make sure that the status bar is updated
+    renderNumberOfTodos(model);
   });
 })(init);
 
@@ -133,6 +139,9 @@ function update(msg: Msg, model: Model, value: Todo): void {
       deleteTodo(todoThatShouldBeDeleted.id, model, listItem);
       update('RemoveTodo', model, todoThatShouldBeDeleted);
       saveToLocalStorage(model.AllTodos);
+
+      // when a todo is deleted, make sure that the status bar is updated
+      renderNumberOfTodos(model);
     }
   });
 })(init);
@@ -172,53 +181,10 @@ function update(msg: Msg, model: Model, value: Todo): void {
   // Options for the observer (which mutations to observe)
   const config = { childList: true };
 
-  // Callback function to execute when mutations are observed
-  const callback = (mutationList: MutationRecord[]) => {
-    // check the type of mutation
-    for (const mutation of mutationList) {
-      if (mutation.type === 'childList') {
-        // check to see if any mutation has occurred
-        if (mutation.addedNodes.length !== 0) {
-          const allCompleteButtons = document.querySelectorAll('.complete-btn');
-
-          allCompleteButtons.forEach((button) => {
-            // remove any previous event listeners before adding anymore in order to avoid any strange behavior
-            button.removeEventListener('click', () => {});
-
-            button.addEventListener('click', () => {
-              // get the listItem, its first child which will either by a p tag or a del tag and its text content
-              const listItem = button.parentElement as HTMLLIElement;
-              const pOrDel = listItem.children[1];
-              const todoText = pOrDel.textContent as string;
-
-              // create a new element that will be inserted depending on whether the todo is completed or not
-              const del = createDelElement(todoText);
-              const p = createParagraphElement(todoText);
-
-              if (pOrDel instanceof HTMLParagraphElement) {
-                listItem.replaceChild(del, pOrDel);
-              } else {
-                listItem.replaceChild(p, pOrDel);
-              }
-
-              // update the completed status of the todo
-              if (listItem.dataset.id != null) {
-                const currentTodo = findTodo(listItem.dataset.id, model);
-                const opposite = !currentTodo.completed;
-                listItem.dataset.completed = String(opposite);
-
-                update('CompleteTodo', model, currentTodo);
-                saveToLocalStorage(model.AllTodos);
-              }
-            });
-          });
-        }
-      }
-    }
-  };
-
   // Create an observer instance linked to the callback function
-  const observer = new MutationObserver(callback);
+  const observer = new MutationObserver((mutationList) => {
+    completeTodo(mutationList, model);
+  });
 
   // Start observing the target node for configured mutations
   observer.observe(ul, config);
@@ -233,7 +199,33 @@ function update(msg: Msg, model: Model, value: Todo): void {
   }
 })(init);
 
-// SET FILTER
+// REMOVE STATUS BAR AND TEXT-WRAPPER WHEN THERE'RE NO TODOS
+((model: Model) => {})(init);
+
+// TOGGLE THEME
+((model: Model) => {})(init);
+
+// FILTER TASKS
+((model: Model) => {})(init);
+
+// DISPLAY NUMBER OF UN-COMPLETED TODOS
+((model: Model) => {
+  // Options for the observer (which mutations to observe)
+  const config = { childList: true, subtree: true };
+
+  // Create an observer instance linked to the callback function
+  const observer = new MutationObserver((mutationList) => {
+    updateStatusBar(mutationList, model);
+  });
+
+  // Start observing the target node for configured mutations
+  observer.observe(ul, config);
+})(init);
+
+// CLEAR ALL COMPLETED TASKS
+((model: Model) => {})(init);
+
+// DRAG AND DROP TASKS
 ((model: Model) => {})(init);
 
 // ------------------------------------------------------------------------------
@@ -322,6 +314,26 @@ function handleCompletedClick(e: Event, model: Model, el = {}) {
 
     toggleCompleteAttribute(listItem, currentTodo.completed);
   }
+}
+
+/**
+ * Changes the number of todos in the display bar(s)
+ * @param model The current state which should know which todos are currently completed
+ */
+function renderNumberOfTodos(model: Model) {
+  const todosLeft = document.querySelectorAll(
+    '.items-left p'
+  ) as NodeListOf<HTMLParagraphElement>;
+
+  const unCompletedTodos = model.AllTodos.filter((todo) => !todo.completed);
+
+  todosLeft.forEach((todo) => {
+    if (unCompletedTodos.length === 1) {
+      todo.textContent = `${unCompletedTodos.length} item left`;
+    } else {
+      todo.textContent = `${unCompletedTodos.length} items left`;
+    }
+  });
 }
 
 // ------------------------------------------------------------------------------
@@ -492,4 +504,64 @@ function createDelElement(text: string): HTMLModElement {
   del.className = 'list-item-text';
 
   return del;
+}
+
+// ------------------------------------------------------------------------------
+//                             MUTATION OBSERVERS
+//-------------------------------------------------------------------------------
+function completeTodo(mutationList: MutationRecord[], model: Model) {
+  // check the type of mutation
+  for (const mutation of mutationList) {
+    if (mutation.type === 'childList') {
+      // check to see if any mutation has occurred
+      if (mutation.addedNodes.length !== 0) {
+        const allCompleteButtons = document.querySelectorAll('.complete-btn');
+
+        allCompleteButtons.forEach((button) => {
+          // remove any previous event listeners before adding anymore in order to avoid any strange behavior
+          button.removeEventListener('click', () => {});
+
+          button.addEventListener('click', () => {
+            // get the listItem, its first child which will either by a p tag or a del tag and its text content
+            const listItem = button.parentElement as HTMLLIElement;
+            const pOrDel = listItem.children[1];
+            const todoText = pOrDel.textContent as string;
+
+            // create a new element that will be inserted depending on whether the todo is completed or not
+            const del = createDelElement(todoText);
+            const p = createParagraphElement(todoText);
+
+            if (pOrDel instanceof HTMLParagraphElement) {
+              listItem.replaceChild(del, pOrDel);
+            } else {
+              listItem.replaceChild(p, pOrDel);
+            }
+
+            // update the completed status of the todo
+            if (listItem.dataset.id != null) {
+              const currentTodo = findTodo(listItem.dataset.id, model);
+              const opposite = !currentTodo.completed;
+              listItem.dataset.completed = String(opposite);
+
+              update('CompleteTodo', model, currentTodo);
+              saveToLocalStorage(model.AllTodos);
+            }
+          });
+        });
+      }
+    }
+  }
+}
+
+function updateStatusBar(mutationList: MutationRecord[], model: Model) {
+  for (const mutation of mutationList) {
+    if (mutation.type === 'childList') {
+      if (
+        mutation.addedNodes[0] instanceof HTMLModElement ||
+        mutation.addedNodes[0] instanceof HTMLParagraphElement
+      ) {
+        renderNumberOfTodos(model);
+      }
+    }
+  }
 }
