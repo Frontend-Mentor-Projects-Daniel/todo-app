@@ -5,6 +5,12 @@
 
 .list-item[data-completed='true'] .complete-btn {
   background-image: var(--clr-primary-gradient);
+  border: none;
+}
+
+// remove pseudo element on hover
+.list-item[data-completed='true'] .complete-btn:hover::after {
+  content: none;
 }
 
 .list-item[data-active='false'] {

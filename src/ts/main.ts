@@ -1,7 +1,15 @@
-// get the id of the todo ✅
-// find the specific todo ✅
-// change the completed property to true ✅
-// add to exceptions any .complete-btn with the data-attribute of completed="true" should have a background of the gradient
+// WHEN USER CLICKS ON COMPLETED BUTTON, ADD GRADIENT
+// get the id of the todo
+// find the specific todo
+// change the completed property to true
+// Save the state
+
+// WHEN USER CLICKS ON COMPLETED BUTTON, ADD LINE THROUGH
+// get the id of the todo
+// find the specific todo
+// change the p tag to a del tag
+// -> This will probably require some updating of the renderListItem function
+// -> May also be better to create a function to render a single todo rather than re-render all of them
 
 // ------------------------------------------------------------------------------
 //                                 DOM NODES
@@ -78,7 +86,7 @@ function update(msg: Msg, model: Model, value: Todo): void {
       model.AllTodos.forEach((todo) => {
         if (todo.id === value.id) {
           const index = model.AllTodos.indexOf(todo);
-          model.AllTodos[index].completed = value.completed;
+          model.AllTodos[index].completed = !value.completed;
         }
       });
       break;
@@ -130,23 +138,6 @@ function update(msg: Msg, model: Model, value: Todo): void {
     }
 
     renderTodos(model.AllTodos);
-
-    // add an eventListener to each button now so that they will accept click events when created
-    const completeButtons = document.querySelectorAll('.complete-btn');
-    completeButtons.forEach((button) => {
-      button.addEventListener('click', (e) => {
-        const newChild = document.createElement('del');
-        newChild.className = 'list-item-text';
-        // newChild.textContent = text;
-        // const oldChild = target;
-        // const parent = listItem;
-
-        // const replacementInfo = { parent, newChild, oldChild };
-
-        // handleCompletedClick(e, model);
-        saveToLocalStorage(model.AllTodos);
-      });
-    });
   });
 })(init);
 
@@ -206,6 +197,72 @@ function update(msg: Msg, model: Model, value: Todo): void {
   });
 })(init);
 
+// COMPLETE TODO
+((model: Model) => {
+  // Options for the observer (which mutations to observe)
+  const config = { childList: true };
+
+  // Callback function to execute when mutations are observed
+  const callback = (mutationList) => {
+    for (const mutation of mutationList) {
+      if (mutation.type === 'childList') {
+        if (mutation.addedNodes.length !== 0) {
+          const allCompleteButtons = document.querySelectorAll('.complete-btn');
+
+          allCompleteButtons.forEach((button) => {
+            button.removeEventListener('click', () => {});
+
+            button.addEventListener('click', () => {
+              const listItem = button.parentElement as HTMLLIElement;
+              const pOrDel = listItem.children[1] as HTMLParagraphElement;
+              const todoText = pOrDel.textContent;
+
+              const del = document.createElement('del');
+              del.textContent = todoText;
+              del.className = 'list-item-text';
+
+              const p = document.createElement('p');
+              p.textContent = todoText;
+              p.className = 'list-item-text';
+              p.setAttribute('contenteditable', 'true');
+
+              if (pOrDel instanceof HTMLParagraphElement) {
+                listItem.replaceChild(del, pOrDel);
+              } else {
+                listItem.replaceChild(p, pOrDel);
+              }
+
+              if (listItem.dataset.id != null) {
+                const currentTodo = findTodo(listItem.dataset.id, model);
+                const opposite = !currentTodo.completed;
+                listItem.dataset.completed = String(opposite);
+
+                update('CompleteTodo', model, currentTodo);
+                saveToLocalStorage(model.AllTodos);
+              }
+            });
+          });
+        }
+      }
+    }
+  };
+
+  // Create an observer instance linked to the callback function
+  const observer = new MutationObserver(callback);
+
+  // Start observing the target node for configured mutations
+  observer.observe(ul, config);
+
+  // add a mutation so that the mutationObserver will automatically kick in
+  const newLi = document.createElement('li') as HTMLLIElement;
+  newLi.dataset.id = '000';
+  const shouldDelete = newLi;
+  ul.append(newLi);
+  if (shouldDelete.dataset.id === '000') {
+    shouldDelete.remove();
+  }
+})(init);
+
 // SET FILTER
 ((model: Model) => {})(init);
 
@@ -240,7 +297,7 @@ function renderTodos(todos: Todo[]) {
 /**
  * Mutates a todo so that its completed data attribute is toggled
  * @param listItem - A list item currently appended to the DOM
- * @param value - What the completed data attribute should be st to
+ * @param value - What the completed data attribute should be set to
  */
 function toggleCompleteAttribute(listItem: HTMLLIElement, value: boolean) {
   const isCompleted = value;
@@ -273,8 +330,6 @@ function deleteTodo(
  * @param el -
  */
 function handleCompletedClick(e: Event, model: Model, el = {}) {
-  console.log(el);
-
   const completeBtn = e.currentTarget as HTMLButtonElement;
 
   const listItem = completeBtn.parentElement as HTMLLIElement;

@@ -1,9 +1,16 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
-// get the id of the todo ✅
-// find the specific todo ✅
-// change the completed property to true ✅
-// add to exceptions any .complete-btn with the data-attribute of completed="true" should have a background of the gradient
+// WHEN USER CLICKS ON COMPLETED BUTTON, ADD GRADIENT
+// get the id of the todo
+// find the specific todo
+// change the completed property to true
+// Save the state
+// WHEN USER CLICKS ON COMPLETED BUTTON, ADD LINE THROUGH
+// get the id of the todo
+// find the specific todo
+// change the p tag to a del tag
+// -> This will probably require some updating of the renderListItem function
+// -> May also be better to create a function to render a single todo rather than re-render all of them
 // ------------------------------------------------------------------------------
 //                                 DOM NODES
 //-------------------------------------------------------------------------------
@@ -45,7 +52,7 @@ function update(msg, model, value) {
             model.AllTodos.forEach(function (todo) {
                 if (todo.id === value.id) {
                     var index = model.AllTodos.indexOf(todo);
-                    model.AllTodos[index].completed = value.completed;
+                    model.AllTodos[index].completed = !value.completed;
                 }
             });
             break;
@@ -110,20 +117,6 @@ function update(msg, model, value) {
             saveToLocalStorage(model.AllTodos);
         }
         renderTodos(model.AllTodos);
-        // add an eventListener to each button now so that they will accept click events when created
-        var completeButtons = document.querySelectorAll('.complete-btn');
-        completeButtons.forEach(function (button) {
-            button.addEventListener('click', function (e) {
-                var newChild = document.createElement('del');
-                newChild.className = 'list-item-text';
-                // newChild.textContent = text;
-                // const oldChild = target;
-                // const parent = listItem;
-                // const replacementInfo = { parent, newChild, oldChild };
-                // handleCompletedClick(e, model);
-                saveToLocalStorage(model.AllTodos);
-            });
-        });
     });
 })(init);
 // DELETE TODOS
@@ -172,6 +165,81 @@ function update(msg, model, value) {
         }
     });
 })(init);
+// COMPLETE TODO
+(function (model) {
+    // Options for the observer (which mutations to observe)
+    var config = { childList: true };
+    // Callback function to execute when mutations are observed
+    var callback = function callback(mutationList) {
+        var _iteratorNormalCompletion2 = true;
+        var _didIteratorError2 = false;
+        var _iteratorError2 = undefined;
+
+        try {
+            for (var _iterator2 = mutationList[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                var mutation = _step2.value;
+
+                if (mutation.type === 'childList') {
+                    if (mutation.addedNodes.length !== 0) {
+                        var allCompleteButtons = document.querySelectorAll('.complete-btn');
+                        allCompleteButtons.forEach(function (button) {
+                            button.removeEventListener('click', function () {});
+                            button.addEventListener('click', function () {
+                                var listItem = button.parentElement;
+                                var pOrDel = listItem.children[1];
+                                var todoText = pOrDel.textContent;
+                                var del = document.createElement('del');
+                                del.textContent = todoText;
+                                del.className = 'list-item-text';
+                                var p = document.createElement('p');
+                                p.textContent = todoText;
+                                p.className = 'list-item-text';
+                                p.setAttribute('contenteditable', 'true');
+                                if (pOrDel instanceof HTMLParagraphElement) {
+                                    listItem.replaceChild(del, pOrDel);
+                                } else {
+                                    listItem.replaceChild(p, pOrDel);
+                                }
+                                if (listItem.dataset.id != null) {
+                                    var currentTodo = findTodo(listItem.dataset.id, model);
+                                    var opposite = !currentTodo.completed;
+                                    listItem.dataset.completed = String(opposite);
+                                    update('CompleteTodo', model, currentTodo);
+                                    saveToLocalStorage(model.AllTodos);
+                                }
+                            });
+                        });
+                    }
+                }
+            }
+        } catch (err) {
+            _didIteratorError2 = true;
+            _iteratorError2 = err;
+        } finally {
+            try {
+                if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                    _iterator2.return();
+                }
+            } finally {
+                if (_didIteratorError2) {
+                    throw _iteratorError2;
+                }
+            }
+        }
+    };
+    // Create an observer instance linked to the callback function
+    var observer = new MutationObserver(callback);
+    // Start observing the target node for configured mutations
+    observer.observe(ul, config);
+    // add a mutation so that the mutationObserver will automatically kick in
+    var newLi = document.createElement('li');
+    newLi.dataset.id = '000';
+    var shouldDelete = newLi;
+    ul.append(newLi);
+    if (shouldDelete.dataset.id === '000') {
+        shouldDelete.remove();
+    }
+})(init);
 // SET FILTER
 (function (model) {})(init);
 // ------------------------------------------------------------------------------
@@ -184,29 +252,29 @@ function update(msg, model, value) {
 function renderTodos(todos) {
     ul.innerHTML = '';
     var tempStorage = [];
-    var _iteratorNormalCompletion2 = true;
-    var _didIteratorError2 = false;
-    var _iteratorError2 = undefined;
+    var _iteratorNormalCompletion3 = true;
+    var _didIteratorError3 = false;
+    var _iteratorError3 = undefined;
 
     try {
-        for (var _iterator2 = todos[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-            var todo = _step2.value;
+        for (var _iterator3 = todos[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+            var todo = _step3.value;
 
             var determineElement = todo.completed ? 'del' : 'p';
             tempStorage.push(createListItem(todo.id, todo.value.trim(), todo.completed, determineElement));
             input.value = '';
         }
     } catch (err) {
-        _didIteratorError2 = true;
-        _iteratorError2 = err;
+        _didIteratorError3 = true;
+        _iteratorError3 = err;
     } finally {
         try {
-            if (!_iteratorNormalCompletion2 && _iterator2.return) {
-                _iterator2.return();
+            if (!_iteratorNormalCompletion3 && _iterator3.return) {
+                _iterator3.return();
             }
         } finally {
-            if (_didIteratorError2) {
-                throw _iteratorError2;
+            if (_didIteratorError3) {
+                throw _iteratorError3;
             }
         }
     }
@@ -216,7 +284,7 @@ function renderTodos(todos) {
 /**
  * Mutates a todo so that its completed data attribute is toggled
  * @param listItem - A list item currently appended to the DOM
- * @param value - What the completed data attribute should be st to
+ * @param value - What the completed data attribute should be set to
  */
 function toggleCompleteAttribute(listItem, value) {
     var isCompleted = value;
@@ -243,7 +311,6 @@ function deleteTodo(id, model, listElement) {
 function handleCompletedClick(e, model) {
     var el = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
-    console.log(el);
     var completeBtn = e.currentTarget;
     var listItem = completeBtn.parentElement;
     var id = listItem.dataset.id;
