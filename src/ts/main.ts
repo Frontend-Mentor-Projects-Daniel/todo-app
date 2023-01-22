@@ -145,9 +145,12 @@ function update(msg: Msg, model: Model, value: Todo): void {
     if (target instanceof HTMLParagraphElement) {
       const text = target.textContent !== null ? target.textContent : '';
       const listItem = target.parentElement as HTMLLIElement;
-      const listItemID = listItem.dataset.id;
+      const listItemID = listItem.dataset.id as string;
+      // strip out white spaces so that users can't update a todo to an empty line
+      const textPattern = text.replace(/ /g, '').trim();
 
-      if (listItemID !== undefined) {
+      // If white space or new line characters are the only things submitted, the todo will be turned back to the previous one
+      if (listItemID !== undefined && textPattern.length !== 0) {
         const updatedTodo: Todo = {
           id: listItemID,
           value: text,
@@ -156,7 +159,9 @@ function update(msg: Msg, model: Model, value: Todo): void {
         update('UpdateTodo', model, updatedTodo);
         saveToLocalStorage(model.AllTodos);
       } else {
-        throw new Error("This list item doesn't have an ID");
+        const previousTodo = findTodo(listItemID, model);
+        const previousText = previousTodo.value;
+        target.textContent = previousText;
       }
     }
   });

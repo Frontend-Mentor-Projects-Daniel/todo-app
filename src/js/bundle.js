@@ -123,7 +123,10 @@ function update(msg, model, value) {
             var text = target.textContent !== null ? target.textContent : '';
             var listItem = target.parentElement;
             var listItemID = listItem.dataset.id;
-            if (listItemID !== undefined) {
+            // strip out white spaces so that users can't update a todo to an empty line
+            var textPattern = text.replace(/ /g, '').trim();
+            // If white space or new line characters are the only things submitted, the todo will be turned back to the previous one
+            if (listItemID !== undefined && textPattern.length !== 0) {
                 var updatedTodo = {
                     id: listItemID,
                     value: text,
@@ -132,7 +135,9 @@ function update(msg, model, value) {
                 update('UpdateTodo', model, updatedTodo);
                 saveToLocalStorage(model.AllTodos);
             } else {
-                throw new Error("This list item doesn't have an ID");
+                var previousTodo = findTodo(listItemID, model);
+                var previousText = previousTodo.value;
+                target.textContent = previousText;
             }
         }
     });
