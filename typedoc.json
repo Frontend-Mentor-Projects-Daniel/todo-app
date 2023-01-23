@@ -7,7 +7,6 @@
     "out": "docs",
     "readme": "none",
     "exclude": [
-        "src/ts/tests/**",
-        "src/ts/main.ts"
+        "src/ts/tests/**"
     ]
 }

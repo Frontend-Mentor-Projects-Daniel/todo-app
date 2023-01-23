@@ -292,7 +292,7 @@ function update(msg, model, value) {
         // the element positioned right after the currently being dragged element
         var afterElement = getDragAfterElement(ul, e.clientY);
         // TODO: Bugs arise sometimes when trying to move elements to the last position
-        //todo Such bugs include, the complete button not being able to be clicked
+        //todo Such bugs include, the complete button not being able to be clicked and playing around with the tabs and moving elements around will cause other elements to get deleted
         if (afterElement == null) {
             currentlyDraggedItem.setAttribute('contenteditable', 'false');
             ul.appendChild(currentlyDraggedItem);
@@ -667,6 +667,7 @@ function convertStringToBool(str) {
 /**
  * Returns the element that comes after the current position of a dragged element
  */
+//TODO: try adding event listeners when === undefined
 function getDragAfterElement(container, y) {
     var draggableElements = [].concat(_toConsumableArray(container.querySelectorAll('[draggable="true"]:not(.dragging)')));
     return draggableElements.reduce(function (closest, child) {

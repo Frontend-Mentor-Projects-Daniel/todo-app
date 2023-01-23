@@ -764,6 +764,7 @@ function convertStringToBool(str: string): boolean {
 /**
  * Returns the element that comes after the current position of a dragged element
  */
+//TODO: try adding event listeners when === undefined
 function getDragAfterElement(container, y: number) {
   const draggableElements = [
     ...container.querySelectorAll('[draggable="true"]:not(.dragging)'),
