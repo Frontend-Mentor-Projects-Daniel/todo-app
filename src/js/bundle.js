@@ -48,6 +48,15 @@ function update(msg, model, value) {
                 }
             });
             break;
+        case 'RearrangeOrder':
+            // find current todo index
+            var todoPosition = model.AllTodos.indexOf(value);
+            // splice previous todo out
+            model.AllTodos.splice(todoPosition, 1);
+            // splice current todo in
+            // model.AllTodos.splice()
+            console.log(model.AllTodos);
+            break;
     }
 }
 // ------------------------------------------------------------------------------
@@ -249,7 +258,57 @@ function update(msg, model, value) {
     });
 })(init);
 // DRAG AND DROP TASKS
-(function (model) {})(init);
+/**
+ * Returns the element that comes after the current position of a dragged element
+ */
+function getDragAfterElement(container, y) {
+    var draggableElements = [].concat(_toConsumableArray(container.querySelectorAll('[draggable="true"]:not(.dragging)')));
+    return draggableElements.reduce(function (closest, child) {
+        var box = child.getBoundingClientRect();
+        var offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) {
+            return { offset: offset, element: child };
+        } else {
+            return closest;
+        }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+(function (model) {
+    ul.addEventListener('dragstart', function (e) {
+        var target = e.target;
+        if (target.getAttribute('draggable') === 'true') {
+            target.classList.add('dragging');
+        }
+    });
+    ul.addEventListener('dragend', function (e) {
+        var target = e.target;
+        if (target.getAttribute('draggable') === 'true') {
+            var turnHtmlToTodoArray = function turnHtmlToTodoArray() {
+                var strippedTodoId = target.dataset.id;
+                var todo = findTodo(strippedTodoId, model);
+                // TODO: Find a way to get the new position of the list item and save splice that in to the global state
+                update('RearrangeOrder', model, todo);
+                // saveTodosToLocalStorage(model.AllTodos)
+            };
+
+            target.classList.remove('dragging');
+
+            turnHtmlToTodoArray();
+        }
+    });
+    ul.addEventListener('dragover', function (e) {
+        // dragging and appending a child to a container is disabled by default, this is to prevent that default
+        e.preventDefault();
+        var currentlyDraggedItem = document.querySelector('.dragging');
+        // the element positioned right after the currently being dragged element
+        var afterElement = getDragAfterElement(ul, e.clientY);
+        if (afterElement == null) {
+            ul.appendChild(currentlyDraggedItem);
+        } else {
+            ul.insertBefore(currentlyDraggedItem, afterElement);
+        }
+    });
+})(init);
 // ------------------------------------------------------------------------------
 //                              VIEW FUNCTIONS
 //-------------------------------------------------------------------------------
@@ -448,7 +507,7 @@ function createListItem(id, text) {
     var completed = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
     var el = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 'p';
 
-    var listItem = '\n        <li class="list-item" data-id=' + id + ' data-completed="' + completed + '">\n          <button class="complete-btn">\n            <img src="/src/assets/images/icon-check.svg" aria-hidden="true" alt="" />\n          </button>\n          <' + el + ' class="list-item-text" contenteditable="true">' + text + '</' + el + '>\n          <button class="delete-btn todo-delete-icon">\n            <img class="d" src="/src/assets/images/icon-cross.svg" alt="" />\n          </button>\n        </li>\n    ';
+    var listItem = '\n        <li class="list-item" data-id=' + id + ' data-completed="' + completed + '" draggable="true">\n          <button class="complete-btn">\n            <img src="/src/assets/images/icon-check.svg" aria-hidden="true" alt="" />\n          </button>\n          <' + el + ' class="list-item-text" contenteditable="true">' + text + '</' + el + '>\n          <button class="delete-btn todo-delete-icon">\n            <img class="d" src="/src/assets/images/icon-cross.svg" alt="" />\n          </button>\n        </li>\n    ';
     return listItem;
 }
 /**

@@ -50,7 +50,12 @@ const init: Model = {
 // ------------------------------------------------------------------------------
 //                             UPDATE FUNCTION
 //-------------------------------------------------------------------------------
-type Msg = 'AddTodo' | 'RemoveTodo' | 'UpdateTodo' | 'CompleteTodo';
+type Msg =
+  | 'AddTodo'
+  | 'RemoveTodo'
+  | 'UpdateTodo'
+  | 'CompleteTodo'
+  | 'RearrangeOrder';
 
 function update(msg: Msg, model: Model, value: Todo): void {
   switch (msg) {
@@ -83,6 +88,20 @@ function update(msg: Msg, model: Model, value: Todo): void {
           model.AllTodos[index].completed = !value.completed;
         }
       });
+      break;
+
+    case 'RearrangeOrder':
+      // find current todo index
+      const todoPosition = model.AllTodos.indexOf(value);
+
+      // splice previous todo out
+      model.AllTodos.splice(todoPosition, 1);
+
+      // splice current todo in
+      // model.AllTodos.splice()
+
+      console.log(model.AllTodos);
+
       break;
   }
 }
@@ -298,7 +317,70 @@ function update(msg: Msg, model: Model, value: Todo): void {
 })(init);
 
 // DRAG AND DROP TASKS
-((model: Model) => {})(init);
+/**
+ * Returns the element that comes after the current position of a dragged element
+ */
+function getDragAfterElement(container, y: number) {
+  const draggableElements = [
+    ...container.querySelectorAll('[draggable="true"]:not(.dragging)'),
+  ];
+
+  return draggableElements.reduce(
+    (closest, child) => {
+      const box = child.getBoundingClientRect();
+      const offset = y - box.top - box.height / 2;
+
+      if (offset < 0 && offset > closest.offset) {
+        return { offset: offset, element: child };
+      } else {
+        return closest;
+      }
+    },
+    { offset: Number.NEGATIVE_INFINITY }
+  ).element;
+}
+
+((model: Model) => {
+  ul.addEventListener('dragstart', (e) => {
+    const target = e.target as HTMLElement;
+    if (target.getAttribute('draggable') === 'true') {
+      target.classList.add('dragging');
+    }
+  });
+
+  ul.addEventListener('dragend', (e) => {
+    const target = e.target as HTMLElement;
+    if (target.getAttribute('draggable') === 'true') {
+      target.classList.remove('dragging');
+      function turnHtmlToTodoArray() {
+        const strippedTodoId = target.dataset.id as string;
+        const todo: Todo = findTodo(strippedTodoId, model);
+
+        // TODO: Find a way to get the new position of the list item and save splice that in to the global state
+        update('RearrangeOrder', model, todo);
+
+        // saveTodosToLocalStorage(model.AllTodos)
+      }
+
+      turnHtmlToTodoArray();
+    }
+  });
+
+  ul.addEventListener('dragover', (e) => {
+    // dragging and appending a child to a container is disabled by default, this is to prevent that default
+    e.preventDefault();
+    const currentlyDraggedItem = document.querySelector(
+      '.dragging'
+    ) as HTMLLIElement;
+    // the element positioned right after the currently being dragged element
+    const afterElement = getDragAfterElement(ul, e.clientY);
+    if (afterElement == null) {
+      ul.appendChild(currentlyDraggedItem);
+    } else {
+      ul.insertBefore(currentlyDraggedItem, afterElement);
+    }
+  });
+})(init);
 
 // ------------------------------------------------------------------------------
 //                              VIEW FUNCTIONS
@@ -517,7 +599,7 @@ function createListItem(
   el: allowedElements = 'p'
 ): string {
   const listItem = `
-        <li class="list-item" data-id=${id} data-completed="${completed}">
+        <li class="list-item" data-id=${id} data-completed="${completed}" draggable="true">
           <button class="complete-btn">
             <img src="/src/assets/images/icon-check.svg" aria-hidden="true" alt="" />
           </button>
