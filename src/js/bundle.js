@@ -4,6 +4,8 @@
 //                                 DOM NODES
 //-------------------------------------------------------------------------------
 
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 var todos = document.querySelectorAll('.todo-list-item');
@@ -19,6 +21,13 @@ var body = document.body;
 var init = {
     AllTodos: []
 };
+/**
+ * For updating the global state, it should only update the global state and it should be the only thing which can update it
+ * @param msg A message that will indicate what should be done to the global state
+ * @param model The global state
+ * @param value The Todo in which something should be done to
+ * @param extra Anything else that may need to be added, usually for bonus functionality
+ */
 function update(msg, model, value) {
     switch (msg) {
         case 'AddTodo':
@@ -49,13 +58,17 @@ function update(msg, model, value) {
             });
             break;
         case 'RearrangeOrder':
-            // find current todo index
-            var todoPosition = model.AllTodos.indexOf(value);
-            // splice previous todo out
-            model.AllTodos.splice(todoPosition, 1);
-            // splice current todo in
-            // model.AllTodos.splice()
-            console.log(model.AllTodos);
+            var allListItems = document.querySelectorAll('.list-item');
+            model.AllTodos = [];
+            allListItems.forEach(function (listItem) {
+                var isCompleted = convertStringToBool(listItem.dataset.completed);
+                var newTodo = {
+                    id: listItem.dataset.id,
+                    value: listItem.children[1].textContent,
+                    completed: isCompleted
+                };
+                model.AllTodos.push(newTodo);
+            });
             break;
     }
 }
@@ -258,21 +271,6 @@ function update(msg, model, value) {
     });
 })(init);
 // DRAG AND DROP TASKS
-/**
- * Returns the element that comes after the current position of a dragged element
- */
-function getDragAfterElement(container, y) {
-    var draggableElements = [].concat(_toConsumableArray(container.querySelectorAll('[draggable="true"]:not(.dragging)')));
-    return draggableElements.reduce(function (closest, child) {
-        var box = child.getBoundingClientRect();
-        var offset = y - box.top - box.height / 2;
-        if (offset < 0 && offset > closest.offset) {
-            return { offset: offset, element: child };
-        } else {
-            return closest;
-        }
-    }, { offset: Number.NEGATIVE_INFINITY }).element;
-}
 (function (model) {
     ul.addEventListener('dragstart', function (e) {
         var target = e.target;
@@ -283,17 +281,8 @@ function getDragAfterElement(container, y) {
     ul.addEventListener('dragend', function (e) {
         var target = e.target;
         if (target.getAttribute('draggable') === 'true') {
-            var turnHtmlToTodoArray = function turnHtmlToTodoArray() {
-                var strippedTodoId = target.dataset.id;
-                var todo = findTodo(strippedTodoId, model);
-                // TODO: Find a way to get the new position of the list item and save splice that in to the global state
-                update('RearrangeOrder', model, todo);
-                // saveTodosToLocalStorage(model.AllTodos)
-            };
-
             target.classList.remove('dragging');
-
-            turnHtmlToTodoArray();
+            turnHtmlToTodoArray(target, model);
         }
     });
     ul.addEventListener('dragover', function (e) {
@@ -302,9 +291,13 @@ function getDragAfterElement(container, y) {
         var currentlyDraggedItem = document.querySelector('.dragging');
         // the element positioned right after the currently being dragged element
         var afterElement = getDragAfterElement(ul, e.clientY);
+        // TODO: Bugs arise sometimes when trying to move elements to the last position
+        //todo Such bugs include, the complete button not being able to be clicked
         if (afterElement == null) {
+            currentlyDraggedItem.setAttribute('contenteditable', 'false');
             ul.appendChild(currentlyDraggedItem);
         } else {
+            currentlyDraggedItem.setAttribute('contenteditable', 'false');
             ul.insertBefore(currentlyDraggedItem, afterElement);
         }
     });
@@ -456,6 +449,46 @@ function toggleAriaSelected(tab) {
     if (isSelected === null || isSelected === '') {
         tab.setAttribute('aria-selected', 'true');
     }
+}
+/**
+ * Changes the state to match the new order of elements
+ * @param target
+ * @param model
+ */
+function turnHtmlToTodoArray(target, model) {
+    var strippedTodoId = target.dataset.id;
+    var todo = findTodo(strippedTodoId, model);
+    var allListItems = document.querySelectorAll('.list-item');
+    var _iteratorNormalCompletion3 = true;
+    var _didIteratorError3 = false;
+    var _iteratorError3 = undefined;
+
+    try {
+        for (var _iterator3 = allListItems.entries()[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+            var _step3$value = _slicedToArray(_step3.value, 2),
+                index = _step3$value[0],
+                value = _step3$value[1];
+
+            if (value.dataset.id === strippedTodoId) {
+                update('RearrangeOrder', model, todo);
+            }
+        }
+    } catch (err) {
+        _didIteratorError3 = true;
+        _iteratorError3 = err;
+    } finally {
+        try {
+            if (!_iteratorNormalCompletion3 && _iterator3.return) {
+                _iterator3.return();
+            }
+        } finally {
+            if (_didIteratorError3) {
+                throw _iteratorError3;
+            }
+        }
+    }
+
+    saveTodosToLocalStorage(model.AllTodos);
 }
 // ------------------------------------------------------------------------------
 //                                   DATABASE
@@ -619,6 +652,33 @@ function getCompletedListItems() {
     });
     return completedListItems;
 }
+/**
+ * Returns a boolean depending on the string. Used mainly for converting the <li>.dataset.completed from a string to a bool since type Todo requires a boolean
+ * @param str A string to convert to a boolean. Will return true for "true" else false for anything else
+ * @returns true or false
+ */
+function convertStringToBool(str) {
+    if (str === 'true') {
+        return true;
+    } else {
+        return false;
+    }
+}
+/**
+ * Returns the element that comes after the current position of a dragged element
+ */
+function getDragAfterElement(container, y) {
+    var draggableElements = [].concat(_toConsumableArray(container.querySelectorAll('[draggable="true"]:not(.dragging)')));
+    return draggableElements.reduce(function (closest, child) {
+        var box = child.getBoundingClientRect();
+        var offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) {
+            return { offset: offset, element: child };
+        } else {
+            return closest;
+        }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
 // ------------------------------------------------------------------------------
 //                             MUTATION OBSERVERS
 //-------------------------------------------------------------------------------
@@ -629,13 +689,13 @@ function getCompletedListItems() {
  */
 function mutateCompletedTodos(mutationList, model) {
     // check the type of mutation
-    var _iteratorNormalCompletion3 = true;
-    var _didIteratorError3 = false;
-    var _iteratorError3 = undefined;
+    var _iteratorNormalCompletion4 = true;
+    var _didIteratorError4 = false;
+    var _iteratorError4 = undefined;
 
     try {
-        for (var _iterator3 = mutationList[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-            var mutation = _step3.value;
+        for (var _iterator4 = mutationList[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+            var mutation = _step4.value;
 
             if (mutation.type === 'childList') {
                 // check to see if any mutation has occurred
@@ -671,41 +731,6 @@ function mutateCompletedTodos(mutationList, model) {
             }
         }
     } catch (err) {
-        _didIteratorError3 = true;
-        _iteratorError3 = err;
-    } finally {
-        try {
-            if (!_iteratorNormalCompletion3 && _iterator3.return) {
-                _iterator3.return();
-            }
-        } finally {
-            if (_didIteratorError3) {
-                throw _iteratorError3;
-            }
-        }
-    }
-}
-/**
- *  Mutation that should occur the display on the status bar that shows the remaining un-completed todos
- * @param mutationList The data associated with each mutation
- * @param model Used because the global state of the todos is required
- */
-function mutateRemainingTodosDisplay(mutationList, model) {
-    var _iteratorNormalCompletion4 = true;
-    var _didIteratorError4 = false;
-    var _iteratorError4 = undefined;
-
-    try {
-        for (var _iterator4 = mutationList[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-            var mutation = _step4.value;
-
-            if (mutation.type === 'childList') {
-                if (mutation.addedNodes[0] instanceof HTMLModElement || mutation.addedNodes[0] instanceof HTMLParagraphElement) {
-                    renderNumberOfTodos(model);
-                }
-            }
-        }
-    } catch (err) {
         _didIteratorError4 = true;
         _iteratorError4 = err;
     } finally {
@@ -721,11 +746,11 @@ function mutateRemainingTodosDisplay(mutationList, model) {
     }
 }
 /**
- *  Mutation that should occur to the status bar when they're no todos left
+ *  Mutation that should occur the display on the status bar that shows the remaining un-completed todos
  * @param mutationList The data associated with each mutation
  * @param model Used because the global state of the todos is required
  */
-function mutateStatusBar(mutationList, model) {
+function mutateRemainingTodosDisplay(mutationList, model) {
     var _iteratorNormalCompletion5 = true;
     var _didIteratorError5 = false;
     var _iteratorError5 = undefined;
@@ -735,11 +760,8 @@ function mutateStatusBar(mutationList, model) {
             var mutation = _step5.value;
 
             if (mutation.type === 'childList') {
-                var main = document.querySelector('main');
-                if (model.AllTodos.length === 0 && main !== null) {
-                    main.style.transform = 'translateY(0)';
-                } else {
-                    main.style.transform = 'translateY(-24px)';
+                if (mutation.addedNodes[0] instanceof HTMLModElement || mutation.addedNodes[0] instanceof HTMLParagraphElement) {
+                    renderNumberOfTodos(model);
                 }
             }
         }
@@ -754,6 +776,44 @@ function mutateStatusBar(mutationList, model) {
         } finally {
             if (_didIteratorError5) {
                 throw _iteratorError5;
+            }
+        }
+    }
+}
+/**
+ *  Mutation that should occur to the status bar when they're no todos left
+ * @param mutationList The data associated with each mutation
+ * @param model Used because the global state of the todos is required
+ */
+function mutateStatusBar(mutationList, model) {
+    var _iteratorNormalCompletion6 = true;
+    var _didIteratorError6 = false;
+    var _iteratorError6 = undefined;
+
+    try {
+        for (var _iterator6 = mutationList[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+            var mutation = _step6.value;
+
+            if (mutation.type === 'childList') {
+                var main = document.querySelector('main');
+                if (model.AllTodos.length === 0 && main !== null) {
+                    main.style.transform = 'translateY(0)';
+                } else {
+                    main.style.transform = 'translateY(-24px)';
+                }
+            }
+        }
+    } catch (err) {
+        _didIteratorError6 = true;
+        _iteratorError6 = err;
+    } finally {
+        try {
+            if (!_iteratorNormalCompletion6 && _iterator6.return) {
+                _iterator6.return();
+            }
+        } finally {
+            if (_didIteratorError6) {
+                throw _iteratorError6;
             }
         }
     }

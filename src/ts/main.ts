@@ -57,6 +57,13 @@ type Msg =
   | 'CompleteTodo'
   | 'RearrangeOrder';
 
+/**
+ * For updating the global state, it should only update the global state and it should be the only thing which can update it
+ * @param msg A message that will indicate what should be done to the global state
+ * @param model The global state
+ * @param value The Todo in which something should be done to
+ * @param extra Anything else that may need to be added, usually for bonus functionality
+ */
 function update(msg: Msg, model: Model, value: Todo): void {
   switch (msg) {
     case 'AddTodo':
@@ -91,16 +98,24 @@ function update(msg: Msg, model: Model, value: Todo): void {
       break;
 
     case 'RearrangeOrder':
-      // find current todo index
-      const todoPosition = model.AllTodos.indexOf(value);
+      const allListItems = document.querySelectorAll(
+        '.list-item'
+      ) as NodeListOf<HTMLLIElement>;
 
-      // splice previous todo out
-      model.AllTodos.splice(todoPosition, 1);
+      model.AllTodos = [];
 
-      // splice current todo in
-      // model.AllTodos.splice()
+      allListItems.forEach((listItem) => {
+        const isCompleted = convertStringToBool(
+          listItem.dataset.completed as string
+        );
+        const newTodo: Todo = {
+          id: listItem.dataset.id as string,
+          value: listItem.children[1].textContent as string,
+          completed: isCompleted,
+        };
 
-      console.log(model.AllTodos);
+        model.AllTodos.push(newTodo);
+      });
 
       break;
   }
@@ -317,29 +332,6 @@ function update(msg: Msg, model: Model, value: Todo): void {
 })(init);
 
 // DRAG AND DROP TASKS
-/**
- * Returns the element that comes after the current position of a dragged element
- */
-function getDragAfterElement(container, y: number) {
-  const draggableElements = [
-    ...container.querySelectorAll('[draggable="true"]:not(.dragging)'),
-  ];
-
-  return draggableElements.reduce(
-    (closest, child) => {
-      const box = child.getBoundingClientRect();
-      const offset = y - box.top - box.height / 2;
-
-      if (offset < 0 && offset > closest.offset) {
-        return { offset: offset, element: child };
-      } else {
-        return closest;
-      }
-    },
-    { offset: Number.NEGATIVE_INFINITY }
-  ).element;
-}
-
 ((model: Model) => {
   ul.addEventListener('dragstart', (e) => {
     const target = e.target as HTMLElement;
@@ -352,17 +344,8 @@ function getDragAfterElement(container, y: number) {
     const target = e.target as HTMLElement;
     if (target.getAttribute('draggable') === 'true') {
       target.classList.remove('dragging');
-      function turnHtmlToTodoArray() {
-        const strippedTodoId = target.dataset.id as string;
-        const todo: Todo = findTodo(strippedTodoId, model);
 
-        // TODO: Find a way to get the new position of the list item and save splice that in to the global state
-        update('RearrangeOrder', model, todo);
-
-        // saveTodosToLocalStorage(model.AllTodos)
-      }
-
-      turnHtmlToTodoArray();
+      turnHtmlToTodoArray(target, model);
     }
   });
 
@@ -374,9 +357,14 @@ function getDragAfterElement(container, y: number) {
     ) as HTMLLIElement;
     // the element positioned right after the currently being dragged element
     const afterElement = getDragAfterElement(ul, e.clientY);
+
+    // TODO: Bugs arise sometimes when trying to move elements to the last position
+    //todo Such bugs include, the complete button not being able to be clicked and playing around with the tabs and moving elements around will cause other elements to get deleted
     if (afterElement == null) {
+      currentlyDraggedItem.setAttribute('contenteditable', 'false');
       ul.appendChild(currentlyDraggedItem);
     } else {
+      currentlyDraggedItem.setAttribute('contenteditable', 'false');
       ul.insertBefore(currentlyDraggedItem, afterElement);
     }
   });
@@ -539,6 +527,27 @@ function toggleAriaSelected(tab: HTMLButtonElement) {
   if (isSelected === null || isSelected === '') {
     tab.setAttribute('aria-selected', 'true');
   }
+}
+
+/**
+ * Changes the state to match the new order of elements
+ * @param target
+ * @param model
+ */
+function turnHtmlToTodoArray(target, model) {
+  const strippedTodoId = target.dataset.id as string;
+  const todo: Todo = findTodo(strippedTodoId, model);
+  const allListItems = document.querySelectorAll(
+    '.list-item'
+  ) as NodeListOf<HTMLLIElement>;
+
+  for (const [index, value] of allListItems.entries()) {
+    if (value.dataset.id === strippedTodoId) {
+      update('RearrangeOrder', model, todo);
+    }
+  }
+
+  saveTodosToLocalStorage(model.AllTodos);
 }
 
 // ------------------------------------------------------------------------------
@@ -737,6 +746,42 @@ function getCompletedListItems() {
   );
 
   return completedListItems;
+}
+
+/**
+ * Returns a boolean depending on the string. Used mainly for converting the <li>.dataset.completed from a string to a bool since type Todo requires a boolean
+ * @param str A string to convert to a boolean. Will return true for "true" else false for anything else
+ * @returns true or false
+ */
+function convertStringToBool(str: string): boolean {
+  if (str === 'true') {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+/**
+ * Returns the element that comes after the current position of a dragged element
+ */
+function getDragAfterElement(container, y: number) {
+  const draggableElements = [
+    ...container.querySelectorAll('[draggable="true"]:not(.dragging)'),
+  ];
+
+  return draggableElements.reduce(
+    (closest, child) => {
+      const box = child.getBoundingClientRect();
+      const offset = y - box.top - box.height / 2;
+
+      if (offset < 0 && offset > closest.offset) {
+        return { offset: offset, element: child };
+      } else {
+        return closest;
+      }
+    },
+    { offset: Number.NEGATIVE_INFINITY }
+  ).element;
 }
 
 // ------------------------------------------------------------------------------
