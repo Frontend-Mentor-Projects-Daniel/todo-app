@@ -422,4 +422,9 @@ footer .attribution a {
 .list-item[data-active=false] {
   display: none;
 }
+
+.tabs .tab[aria-selected=true] {
+  color: var(--text-hover-tabs);
+  text-decoration: underline;
+}
 /*# sourceMappingURL=Main.css.map */

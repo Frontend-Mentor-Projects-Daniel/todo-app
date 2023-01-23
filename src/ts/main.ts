@@ -234,7 +234,31 @@ function update(msg: Msg, model: Model, value: Todo): void {
 })(init);
 
 // FILTER TASKS
-((model: Model) => {})(init);
+((model: Model) => {
+  const tabs = document.querySelectorAll('.tabs') as NodeListOf<HTMLDivElement>;
+  tabs.forEach((tab) => {
+    tab.addEventListener('click', (e) => {
+      const button = e.target as HTMLButtonElement;
+
+      if (button.classList.contains('all')) {
+        renderTodos(model.AllTodos);
+        toggleAriaSelected(button);
+      }
+
+      if (button.classList.contains('active')) {
+        const completedTodos = model.AllTodos.filter((todo) => !todo.completed);
+        renderTodos(completedTodos);
+        toggleAriaSelected(button);
+      }
+
+      if (button.classList.contains('completed')) {
+        const completedTodos = model.AllTodos.filter((todo) => todo.completed);
+        renderTodos(completedTodos);
+        toggleAriaSelected(button);
+      }
+    });
+  });
+})(init);
 
 // DISPLAY NUMBER OF UN-COMPLETED TODOS
 ((model: Model) => {
@@ -313,6 +337,18 @@ function toggleCompleteAttribute(listItem: HTMLLIElement, value: boolean) {
   const isCompleted = value;
 
   listItem.dataset.completed = isCompleted.toString();
+}
+
+/**
+ * Toggles the active attribute on a list item
+ * @param listItem An un-completed list item
+ */
+function toggleActiveAttribute(listItem: HTMLLIElement) {
+  if (listItem.dataset.currentlyActive === 'true') {
+    listItem.dataset.currentlyActive = 'false';
+  } else {
+    listItem.dataset.currentlyActive = 'true';
+  }
 }
 
 /**
@@ -401,6 +437,25 @@ function toggleTheme(theme?: CurrentTheme) {
     const imageSrc = imageIcon.getAttribute('src') as string;
     currentTheme = { theme: body.id, image: imageSrc };
     saveThemeToLocalStorage(currentTheme);
+  }
+}
+
+/**
+ * Toggles the aria-selected attribute of a tab to either "true" or "" while resetting the value of the other tabs
+ * @param tab One of the tabs, all, active or completed
+ */
+function toggleAriaSelected(tab: HTMLButtonElement) {
+  // reset the aria-selected attribute on all the tabs
+  const allTabs = document.querySelectorAll(
+    '.tabs button'
+  ) as NodeListOf<HTMLButtonElement>;
+  allTabs.forEach((tab) => {
+    tab.setAttribute('aria-selected', '');
+  });
+
+  const isSelected = tab.getAttribute('aria-selected');
+  if (isSelected === null || isSelected === '') {
+    tab.setAttribute('aria-selected', 'true');
   }
 }
 

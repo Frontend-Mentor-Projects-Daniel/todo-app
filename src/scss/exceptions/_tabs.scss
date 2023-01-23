@@ -1,0 +1,6 @@
+.tabs {
+  .tab[aria-selected='true'] {
+    color: var(--text-hover-tabs);
+    text-decoration: underline;
+  }
+}

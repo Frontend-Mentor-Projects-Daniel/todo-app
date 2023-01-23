@@ -192,7 +192,32 @@ function update(msg, model, value) {
     });
 })(init);
 // FILTER TASKS
-(function (model) {})(init);
+(function (model) {
+    var tabs = document.querySelectorAll('.tabs');
+    tabs.forEach(function (tab) {
+        tab.addEventListener('click', function (e) {
+            var button = e.target;
+            if (button.classList.contains('all')) {
+                renderTodos(model.AllTodos);
+                toggleAriaSelected(button);
+            }
+            if (button.classList.contains('active')) {
+                var completedTodos = model.AllTodos.filter(function (todo) {
+                    return !todo.completed;
+                });
+                renderTodos(completedTodos);
+                toggleAriaSelected(button);
+            }
+            if (button.classList.contains('completed')) {
+                var _completedTodos = model.AllTodos.filter(function (todo) {
+                    return todo.completed;
+                });
+                renderTodos(_completedTodos);
+                toggleAriaSelected(button);
+            }
+        });
+    });
+})(init);
 // DISPLAY NUMBER OF UN-COMPLETED TODOS
 (function (model) {
     // Options for the observer (which mutations to observe)
@@ -274,6 +299,17 @@ function toggleCompleteAttribute(listItem, value) {
     listItem.dataset.completed = isCompleted.toString();
 }
 /**
+ * Toggles the active attribute on a list item
+ * @param listItem An un-completed list item
+ */
+function toggleActiveAttribute(listItem) {
+    if (listItem.dataset.currentlyActive === 'true') {
+        listItem.dataset.currentlyActive = 'false';
+    } else {
+        listItem.dataset.currentlyActive = 'true';
+    }
+}
+/**
  * Removes a Todo <li> from the DOM
  * @param id - A unique id belonging to an object of type Todo
  * @param model - The global state
@@ -345,6 +381,21 @@ function toggleTheme(theme) {
         var _imageSrc = imageIcon.getAttribute('src');
         currentTheme = { theme: body.id, image: _imageSrc };
         saveThemeToLocalStorage(currentTheme);
+    }
+}
+/**
+ * Toggles the aria-selected attribute of a tab to either "true" or "" while resetting the value of the other tabs
+ * @param tab One of the tabs, all, active or completed
+ */
+function toggleAriaSelected(tab) {
+    // reset the aria-selected attribute on all the tabs
+    var allTabs = document.querySelectorAll('.tabs button');
+    allTabs.forEach(function (tab) {
+        tab.setAttribute('aria-selected', '');
+    });
+    var isSelected = tab.getAttribute('aria-selected');
+    if (isSelected === null || isSelected === '') {
+        tab.setAttribute('aria-selected', 'true');
     }
 }
 // ------------------------------------------------------------------------------
