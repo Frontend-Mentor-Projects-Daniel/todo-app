@@ -1,22 +1,12 @@
-# Frontend Mentor - Todo app
+# Frontend Mentor - Todo app solution
 
 ![Design preview for the Todo app coding challenge](./design/desktop-preview.jpg)
 
-## Welcome! 👋
-
-Thanks for checking out this front-end coding challenge.
-
-[Frontend Mentor](https://www.frontendmentor.io) challenges help you improve your coding skills by building realistic projects.
-
-**To do this challenge, you need a good understanding of HTML, CSS and JavaScript.**
+This is a solution to the [Todo app challenge on Frontend Mentor](https://www.frontendmentor.io/challenges/todo-app-Su1_KokOW). Frontend Mentor challenges help you improve your coding skills by building realistic projects.
 
 ## The challenge
 
-Your challenge is to build out this todo app and get it looking as close to the design as possible.
-
-You can use any tools you like to help you complete the challenge. So if you've got something you'd like to practice, feel free to give it a go.
-
-Your users should be able to:
+Users should be able to:
 
 - View the optimal layout for the app depending on their device's screen size
 - See hover states for all interactive elements on the page
@@ -28,72 +18,79 @@ Your users should be able to:
 - Toggle light and dark mode
 - **Bonus**: Drag and drop to reorder items on the list
 
-Want some support on the challenge? [Join our Slack community](https://www.frontendmentor.io/slack) and ask questions in the **#help** channel.
+## Table of contents
 
-## Where to find everything
+- [Overview](#overview)
+  - [The challenge](#the-challenge)
+  - [Links](#links)
+- [My process](#my-process)
+  - [Architecture](#architecture)
+  - [Built with](#built-with)
+  - [What I learned](#what-i-learned)
+  - [Continued development](#continued-development)
+  - [Useful resources](#useful-resources)
+- [Author](#author)
+- [Acknowledgments](#acknowledgments)
 
-Your task is to build out the project to the designs inside the `/design` folder. You will find both a mobile and a desktop version of the design. 
+### Links
 
-The designs are in JPG static format. Using JPGs will mean that you'll need to use your best judgment for styles such as `font-size`, `padding` and `margin`. 
+- [Live Site URL](https://curious-bavarois-65fdf8.netlify.app/)
 
-If you would like the design files (we provide Sketch & Figma versions) to inspect the design in more detail, you can [subscribe as a PRO member](https://www.frontendmentor.io/pro).
+## My process
 
-You will find all the required assets in the `/images` folder. The assets are already optimized.
+### Architecture
 
-There is also a `style-guide.md` file containing the information you'll need, such as color palette and fonts.
+- I used the Elm architecture. Elm is a functional programming language that compiles down to Javascript, it has only a single architecture that is named after itself.
 
-## Building your project
+- Essentially, we have a Model which is what our global state will look like (_all state should be controlled by our global state_)
 
-Feel free to use any workflow that you feel comfortable with. Below is a suggested process, but do not feel like you need to follow these steps:
+- We have a Msg type, which is the type of message that a user can send back to the server
 
-1. Initialize your project as a public repository on [GitHub](https://github.com/). Creating a repo will make it easier to share your code with the community if you need help. If you're not sure how to do this, [have a read-through of this Try Git resource](https://try.github.io/).
-2. Configure your repository to publish your code to a web address. This will also be useful if you need some help during a challenge as you can share the URL for your project with your repo URL. There are a number of ways to do this, and we provide some recommendations below.
-3. Look through the designs to start planning out how you'll tackle the project. This step is crucial to help you think ahead for CSS classes to create reusable styles.
-4. Before adding any styles, structure your content with HTML. Writing your HTML first can help focus your attention on creating well-structured content.
-5. Write out the base styles for your project, including general content styles, such as `font-family` and `font-size`.
-6. Start adding styles to the top of the page and work down. Only move on to the next section once you're happy you've completed the area you're working on.
+- We have an update function which will update the global state in someway depending on the type of message
 
-## Deploying your project
+- Underneath is where I keep my scripts, this isn't part of the Elm architecture but I thought that things would be better this way. Each script is isolated from the others due to being contained within an IFFE (_immediately invoked function expression_), this way any variables created within these scopes won't bleed through and affect anything else. Every new piece of functionality will get its own script
 
-As mentioned above, there are many ways to host your project for free. Our recommend hosts are:
+- Underneath that, I have my view functions which are functions that mutate the DOM in some way (_i.e they change a data attribute on some element or render something to the DOM and so on_) followed by the functions I use to access localStorage and underneath that are the helper functions then the callback functions for the mutation observers
 
-- [GitHub Pages](https://pages.github.com/)
-- [Vercel](https://vercel.com/)
-- [Netlify](https://www.netlify.com/)
+- A user, through an event listener will send a message to the server which will call update with a specific message and will update the global state. This is similar to Redux (_because redux copied this from Elm_)
 
-You can host your site using one of these solutions or any of our other trusted providers. [Read more about our recommended and trusted hosts](https://medium.com/frontend-mentor/frontend-mentor-trusted-hosting-providers-bf000dfebe).
+- I also kept everything in one file since that is also the Elm way to do it. They suggest keeping everything together and only breaking it up when needed thus its normal to have several hundred lines of code per file
 
-## Create a custom `README.md`
+### Built with
 
-We strongly recommend overwriting this `README.md` with a custom one. We've provided a template inside the [`README-template.md`](./README-template.md) file in this starter code.
+- Semantic HTML5 markup
+- SCSS
+- CUBE CSS Methodology
+- Typescript
+- Gulp
+- TS Docs (_For generating documentation_)
 
-The template provides a guide for what to add. A custom `README` will help you explain your project and reflect on your learnings. Please feel free to edit our template as much as you like.
+### What I learned
 
-Once you've added your information to the template, delete this file and rename the `README-template.md` file to `README.md`. That will make it show up as your repository's README file.
+- Mutation observer is quite useful. So useful in fact that I was tempted to use it quite a few times but I held back and only used where it would make things either significantly simpler or when I couldn't figure out how to do things another way
 
-## Submitting your solution
+### Continued development
 
-Submit your solution on the platform for the rest of the community to see. Follow our ["Complete guide to submitting solutions"](https://medium.com/frontend-mentor/a-complete-guide-to-submitting-solutions-on-frontend-mentor-ac6384162248) for tips on how to do this.
+- I rather like the app called [Todoist](https://todoist.com/) and in the future I may add some of the functionality I see here except tweak it to suite my needs more
 
-Remember, if you're looking for feedback on your solution, be sure to ask questions when submitting it. The more specific and detailed you are with your questions, the higher the chance you'll get valuable feedback from the community.
+### Useful resources
 
-## Sharing your solution
+[Mutation Observer #1](https://www.youtube.com/watch?v=Mi4EF9K87aM&t=2s)
+[Mutation Observer #2](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver)
+[Drag and Drop Events #1](https://www.youtube.com/watch?v=jfYWwQrtzzY&t=2s)
+[Drag and Drop Events #2](https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API)
 
-There are multiple places you can share your solution:
+## Author
 
-1. Share your solution page in the **#finished-projects** channel of the [Slack community](https://www.frontendmentor.io/slack). 
-2. Tweet [@frontendmentor](https://twitter.com/frontendmentor) and mention **@frontendmentor**, including the repo and live URLs in the tweet. We'd love to take a look at what you've built and help share it around.
-3. Share your solution on other social channels like LinkedIn.
-4. Blog about your experience building your project. Writing about your workflow, technical choices, and talking through your code is a brilliant way to reinforce what you've learned. Great platforms to write on are [dev.to](https://dev.to/), [Hashnode](https://hashnode.com/), and [CodeNewbie](https://community.codenewbie.org/).
+- [My portfolio](https://daniel-arzani-portfolio.netlify.app/)
+- [My Frontend Mentor](https://www.frontendmentor.io/profile/danielarzani)
 
-We provide templates to help you share your solution once you've submitted it on the platform. Please do edit them and include specific questions when you're looking for feedback. 
+## Acknowledgments
 
-The more specific you are with your questions the more likely it is that another member of the community will give you feedback.
+A friend my bootcamp days asked me if I wanted to work on a project with him, I said okay.
 
-## Got feedback for us?
+We decided to skip doing the designing ourselves so we went for a frontend mentor project
 
-We love receiving feedback! We're always looking to improve our challenges and our platform. So if you have anything you'd like to mention, please email hi[at]frontendmentor[dot]io.
+After completing the project I re-wrote the functionality using TypeScript and following the Elm architecture of the programming language Elm
 
-This challenge is completely free. Please share it with anyone who will find it useful for practice.
-
-**Have fun building!** 🚀
+[This](https://github.com/AhmedAlkh/to-do-app) is the repo to the collaboration

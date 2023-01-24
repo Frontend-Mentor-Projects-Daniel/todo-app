@@ -667,7 +667,6 @@ function convertStringToBool(str) {
 /**
  * Returns the element that comes after the current position of a dragged element
  */
-//TODO: try adding event listeners when === undefined
 function getDragAfterElement(container, y) {
     var draggableElements = [].concat(_toConsumableArray(container.querySelectorAll('[draggable="true"]:not(.dragging)')));
     return draggableElements.reduce(function (closest, child) {
