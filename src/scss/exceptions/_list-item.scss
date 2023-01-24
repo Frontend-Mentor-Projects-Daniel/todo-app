@@ -1,6 +1,6 @@
 .list-item[data-completed='true'] {
-  // display: none;
-  // text-decoration: line-through;
+  color: var(--clr-lighter-gray-200);
+  text-decoration: line-through;
 }
 
 .list-item[data-completed='true'] .complete-btn {
@@ -12,11 +12,3 @@
 .list-item[data-completed='true'] .complete-btn:hover::after {
   content: none;
 }
-
-.list-item[data-active='false'] {
-  display: none;
-}
-
-// .list-item[data-filter='all'] {
-//   display: flex;
-// }

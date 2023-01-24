@@ -1,20 +1,18 @@
 .todo-list {
-  background-color: var(--bg-body);
+  background-color: var(--bg-list-item);
   box-shadow: 0px -33px 50px -2px rgba(194, 195, 214, 0.5);
   border-radius: 5px;
   isolation: isolate;
 
   .list-item {
+    z-index: 1;
+    position: relative;
     display: flex;
     gap: 12px;
     align-items: center;
     padding-inline: 20px;
     padding-block: 16px;
     border-bottom: 1px solid black;
-  }
-
-  .delete-btn {
-    flex-shrink: 0;
   }
 
   @media (min-width: 48rem) {
