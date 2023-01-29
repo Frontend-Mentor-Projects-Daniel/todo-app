@@ -341,6 +341,9 @@ main .text-wrapper {
   z-index: -1;
   border-radius: 50%;
 }
+.todo-list .delete-btn {
+  flex-shrink: 0;
+}
 @media (min-width: 48rem) {
   .todo-list .complete-btn {
     height: 24px;

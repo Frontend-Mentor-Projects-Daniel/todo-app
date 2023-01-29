@@ -51,6 +51,10 @@
     border-radius: 50%;
   }
 
+  .delete-btn {
+    flex-shrink: 0;
+  }
+
   @media (min-width: 48rem) {
     .complete-btn {
       height: 24px;
