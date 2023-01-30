@@ -492,6 +492,14 @@ function turnHtmlToTodoArray(target, model) {
 
     saveTodosToLocalStorage(model.AllTodos);
 }
+/**
+ * Changes the aria-labelledBy attribute for each list item
+ * @param tabPanel - The content that should be shown depending on which tab is clicked
+ * @param tab - A string that contains the id's of each tab
+ */
+function viewChangeAriaLabelledBy(tabPanel, tab) {
+    tabPanel.setAttribute('aria-labelledby', tab);
+}
 // ------------------------------------------------------------------------------
 //                                   DATABASE
 //-------------------------------------------------------------------------------
@@ -543,7 +551,8 @@ function createListItem(id, text) {
     var el = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 'p';
 
     var hasContentEditable = el === 'p' ? 'true' : 'false';
-    var listItem = '\n        <li role="tabpanel" aria-labelledby="tab1" class="list-item" data-id=' + id + ' data-completed="' + completed + '" draggable="true">\n          <button class="complete-btn">\n            <img src="/src/assets/images/icon-check.svg" aria-hidden="true" alt="" />\n          </button>\n          <' + el + ' class="list-item-text" contenteditable=' + hasContentEditable + '>' + text + '</' + el + '>\n          <button class="delete-btn todo-delete-icon">\n            <img class="d" src="/src/assets/images/icon-cross.svg" alt="" />\n          </button>\n        </li>\n    ';
+    var labelledByActiveOrCompleted = completed === true ? 'completed' : 'active';
+    var listItem = '\n        <li role="tabpanel" aria-labelledby=' + labelledByActiveOrCompleted + ' class="list-item" data-id=' + id + ' data-completed="' + completed + '" draggable="true">\n          <button class="complete-btn">\n            <img src="/src/assets/images/icon-check.svg" aria-hidden="true" alt="" />\n          </button>\n          <' + el + ' class="list-item-text" contenteditable=' + hasContentEditable + '>' + text + '</' + el + '>\n          <button class="delete-btn todo-delete-icon">\n            <img class="d" src="/src/assets/images/icon-cross.svg" alt="" />\n          </button>\n        </li>\n    ';
     return listItem;
 }
 /**
@@ -726,6 +735,11 @@ function mutateCompletedTodos(mutationList, model) {
                                 var currentTodo = findTodo(listItem.dataset.id, model);
                                 var opposite = !currentTodo.completed;
                                 listItem.dataset.completed = String(opposite);
+                                if (listItem.dataset.completed === 'true') {
+                                    viewChangeAriaLabelledBy(listItem, 'completed');
+                                } else if (listItem.dataset.completed === 'false') {
+                                    viewChangeAriaLabelledBy(listItem, 'active');
+                                }
                                 update('CompleteTodo', model, currentTodo);
                                 saveTodosToLocalStorage(model.AllTodos);
                             }

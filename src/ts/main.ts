@@ -270,6 +270,7 @@ function update(msg: Msg, model: Model, value: Todo): void {
 // FILTER TASKS
 ((model: Model) => {
   const tabs = document.querySelectorAll('.tabs') as NodeListOf<HTMLDivElement>;
+
   tabs.forEach((tab) => {
     tab.addEventListener('click', (e) => {
       const button = e.target as HTMLButtonElement;
@@ -552,6 +553,18 @@ function turnHtmlToTodoArray(target, model) {
   saveTodosToLocalStorage(model.AllTodos);
 }
 
+/**
+ * Changes the aria-labelledBy attribute for each list item
+ * @param tabPanel - The content that should be shown depending on which tab is clicked
+ * @param tab - A string that contains the id's of each tab
+ */
+function viewChangeAriaLabelledBy(
+  tabPanel: HTMLLIElement,
+  tab: 'all' | 'active' | 'completed'
+) {
+  tabPanel.setAttribute('aria-labelledby', tab);
+}
+
 // ------------------------------------------------------------------------------
 //                                   DATABASE
 //-------------------------------------------------------------------------------
@@ -610,9 +623,11 @@ function createListItem(
   el: allowedElements = 'p'
 ): string {
   const hasContentEditable = el === 'p' ? 'true' : 'false';
+  const labelledByActiveOrCompleted =
+    completed === true ? 'completed' : 'active';
 
   const listItem = `
-        <li role="tabpanel" aria-labelledby="tab1" class="list-item" data-id=${id} data-completed="${completed}" draggable="true">
+        <li role="tabpanel" aria-labelledby=${labelledByActiveOrCompleted} class="list-item" data-id=${id} data-completed="${completed}" draggable="true">
           <button class="complete-btn">
             <img src="/src/assets/images/icon-check.svg" aria-hidden="true" alt="" />
           </button>
@@ -830,6 +845,11 @@ function mutateCompletedTodos(mutationList: MutationRecord[], model: Model) {
               const currentTodo = findTodo(listItem.dataset.id, model);
               const opposite = !currentTodo.completed;
               listItem.dataset.completed = String(opposite);
+              if (listItem.dataset.completed === 'true') {
+                viewChangeAriaLabelledBy(listItem, 'completed');
+              } else if (listItem.dataset.completed === 'false') {
+                viewChangeAriaLabelledBy(listItem, 'active');
+              }
 
               update('CompleteTodo', model, currentTodo);
               saveTodosToLocalStorage(model.AllTodos);

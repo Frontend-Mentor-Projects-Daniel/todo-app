@@ -49,11 +49,52 @@
         />
       </form>
     </header>
-    <main>
-      <div class="todo-list center">
+    <main class="center">
+      <div class="status-bar">
+        <div class="wrapper">
+          <div class="items-left">
+            <p>5 items left</p>
+          </div>
+          <button class="clear-btn">Clear Completed</button>
+        </div>
+        <div class="tabs" role="tablist">
+          <button role="tab" id="all" class="tab all" aria-selected="true">
+            All
+          </button>
+          <button role="tab" id="active" class="tab active">Active</button>
+          <button role="tab" id="completed" class="tab completed">
+            Completed
+          </button>
+        </div>
+
+        <div class="alternate-status-bar">
+          <div class="items-left">
+            <p>5 items left</p>
+          </div>
+          <button class="clear-btn">Clear Completed</button>
+
+          <div class="tabs" role="tablist">
+            <button role="tab" id="tab1" class="tab all" aria-selected="true">
+              All
+            </button>
+            <button role="tab" id="tab2" class="tab active">Active</button>
+            <button role="tab" id="tab3" class="tab completed">
+              Completed
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="todo-list">
         <ul class="list" aria-live="polite">
           <template id="example-list-item">
-            <li class="list-item draggable" data-id="001" draggable="true">
+            <li
+              role="tabpanel"
+              aria-labelledby="active"
+              class="list-item draggable"
+              data-id="001"
+              draggable="true"
+            >
               <button class="complete-btn">
                 <img
                   src="/src/assets/images/icon-check.svg"
@@ -72,35 +113,6 @@
             </li>
           </template>
         </ul>
-      </div>
-      <div class="status-bar center">
-        <div class="wrapper">
-          <div class="items-left">
-            <p>5 items left</p>
-          </div>
-          <button class="clear-btn">Clear Completed</button>
-        </div>
-        <div class="tabs">
-          <button class="tab all" aria-selected="true">All</button>
-          <button class="tab active">Active</button>
-          <button class="tab completed">Completed</button>
-        </div>
-
-        <div class="alternate-status-bar">
-          <div class="items-left">
-            <p>5 items left</p>
-          </div>
-          <button class="clear-btn">Clear Completed</button>
-
-          <div class="tabs">
-            <button class="tab all" aria-selected="true">All</button>
-            <button class="tab active">Active</button>
-            <button class="tab completed">Completed</button>
-          </div>
-        </div>
-      </div>
-      <div class="text-wrapper center">
-        <p>Drag and drop to reorder list</p>
       </div>
     </main>
     <footer>

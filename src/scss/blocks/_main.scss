@@ -1,9 +1,14 @@
 main {
+  display: flex;
+  flex-direction: column-reverse;
+
   padding-inline: 20px;
   transform: translateY(-24px);
 
-  .text-wrapper {
-    text-align: center;
+  &::before {
+    content: 'Drag and drop to reorder list';
+    color: var(--drag-drop-text);
     margin-block: 45px;
+    text-align: center;
   }
 }
