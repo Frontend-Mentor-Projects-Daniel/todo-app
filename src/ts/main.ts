@@ -361,10 +361,12 @@ function update(msg: Msg, model: Model, value: Todo): void {
     // TODO: Bugs arise sometimes when trying to move elements to the last position
     //todo Such bugs include, the complete button not being able to be clicked and playing around with the tabs and moving elements around will cause other elements to get deleted
     if (afterElement == null) {
-      currentlyDraggedItem.setAttribute('contenteditable', 'false');
+      const delElement = currentlyDraggedItem.children[1];
+      delElement.setAttribute('contenteditable', 'false');
       ul.appendChild(currentlyDraggedItem);
     } else {
-      currentlyDraggedItem.setAttribute('contenteditable', 'false');
+      const delElement = currentlyDraggedItem.children[1];
+      delElement.setAttribute('contenteditable', 'false');
       ul.insertBefore(currentlyDraggedItem, afterElement);
     }
   });
@@ -607,12 +609,14 @@ function createListItem(
   completed: boolean = false,
   el: allowedElements = 'p'
 ): string {
+  const hasContentEditable = el === 'p' ? 'true' : 'false';
+
   const listItem = `
-        <li class="list-item" data-id=${id} data-completed="${completed}" draggable="true">
+        <li role="tabpanel" aria-labelledby="tab1" class="list-item" data-id=${id} data-completed="${completed}" draggable="true">
           <button class="complete-btn">
             <img src="/src/assets/images/icon-check.svg" aria-hidden="true" alt="" />
           </button>
-          <${el} class="list-item-text" contenteditable="true">${text}</${el}>
+          <${el} class="list-item-text" contenteditable=${hasContentEditable}>${text}</${el}>
           <button class="delete-btn todo-delete-icon">
             <img class="d" src="/src/assets/images/icon-cross.svg" alt="" />
           </button>
@@ -728,6 +732,7 @@ function createDelElement(text: string): HTMLModElement {
   const del = document.createElement('del');
   del.textContent = text;
   del.className = 'list-item-text';
+  del.setAttribute('contenteditable', 'false');
 
   return del;
 }

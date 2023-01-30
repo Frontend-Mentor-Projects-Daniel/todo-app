@@ -294,10 +294,12 @@ function update(msg, model, value) {
         // TODO: Bugs arise sometimes when trying to move elements to the last position
         //todo Such bugs include, the complete button not being able to be clicked and playing around with the tabs and moving elements around will cause other elements to get deleted
         if (afterElement == null) {
-            currentlyDraggedItem.setAttribute('contenteditable', 'false');
+            var delElement = currentlyDraggedItem.children[1];
+            delElement.setAttribute('contenteditable', 'false');
             ul.appendChild(currentlyDraggedItem);
         } else {
-            currentlyDraggedItem.setAttribute('contenteditable', 'false');
+            var _delElement = currentlyDraggedItem.children[1];
+            _delElement.setAttribute('contenteditable', 'false');
             ul.insertBefore(currentlyDraggedItem, afterElement);
         }
     });
@@ -540,7 +542,8 @@ function createListItem(id, text) {
     var completed = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
     var el = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 'p';
 
-    var listItem = '\n        <li class="list-item" data-id=' + id + ' data-completed="' + completed + '" draggable="true">\n          <button class="complete-btn">\n            <img src="/src/assets/images/icon-check.svg" aria-hidden="true" alt="" />\n          </button>\n          <' + el + ' class="list-item-text" contenteditable="true">' + text + '</' + el + '>\n          <button class="delete-btn todo-delete-icon">\n            <img class="d" src="/src/assets/images/icon-cross.svg" alt="" />\n          </button>\n        </li>\n    ';
+    var hasContentEditable = el === 'p' ? 'true' : 'false';
+    var listItem = '\n        <li role="tabpanel" aria-labelledby="tab1" class="list-item" data-id=' + id + ' data-completed="' + completed + '" draggable="true">\n          <button class="complete-btn">\n            <img src="/src/assets/images/icon-check.svg" aria-hidden="true" alt="" />\n          </button>\n          <' + el + ' class="list-item-text" contenteditable=' + hasContentEditable + '>' + text + '</' + el + '>\n          <button class="delete-btn todo-delete-icon">\n            <img class="d" src="/src/assets/images/icon-cross.svg" alt="" />\n          </button>\n        </li>\n    ';
     return listItem;
 }
 /**
@@ -638,6 +641,7 @@ function createDelElement(text) {
     var del = document.createElement('del');
     del.textContent = text;
     del.className = 'list-item-text';
+    del.setAttribute('contenteditable', 'false');
     return del;
 }
 /**
