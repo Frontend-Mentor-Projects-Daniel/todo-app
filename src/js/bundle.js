@@ -14,7 +14,7 @@ var input = document.querySelector('.create-bar');
 var ul = document.querySelector('.list');
 var template = document.querySelector('#example-list-item');
 var themeToggler = document.querySelector('.theme-toggler');
-var body = document.body;
+var root = document.documentElement;
 // ------------------------------------------------------------------------------
 //                               GLOBAL STATE
 //-------------------------------------------------------------------------------
@@ -413,27 +413,36 @@ function renderNumberOfTodos(model) {
 }
 function toggleTheme(theme) {
     var imageIcon = themeToggler.firstElementChild;
-    // if a current theme exists, use that
-    if (theme != null) {
-        body.id = theme.theme;
-        imageIcon.setAttribute('src', theme.image);
-        return;
-    }
     var currentTheme = {
         theme: '',
         image: ''
     };
-    if (body.id === 'light') {
-        body.id = 'dark';
+    // if a previous theme exists, use that
+    if (theme != null) {
+        root.id = theme.theme;
+        imageIcon.setAttribute('src', theme.image);
+        return;
+    }
+    // if user has preference set to dark mode, lock them into it
+    if (prefersDarkMode()) {
+        root.id = 'dark';
         imageIcon.setAttribute('src', '/src/assets/images/icon-sun.svg');
         var imageSrc = imageIcon.getAttribute('src');
-        currentTheme = { theme: body.id, image: imageSrc };
+        currentTheme = { theme: root.id, image: imageSrc };
         saveThemeToLocalStorage(currentTheme);
-    } else {
-        body.id = 'light';
+        return;
+    }
+    if (root.id === 'dark') {
+        root.id = 'light';
         imageIcon.setAttribute('src', '/src/assets/images/icon-moon.svg');
         var _imageSrc = imageIcon.getAttribute('src');
-        currentTheme = { theme: body.id, image: _imageSrc };
+        currentTheme = { theme: root.id, image: _imageSrc };
+        saveThemeToLocalStorage(currentTheme);
+    } else if (root.id === 'light') {
+        root.id = 'dark';
+        imageIcon.setAttribute('src', '/src/assets/images/icon-sun.svg');
+        var _imageSrc2 = imageIcon.getAttribute('src');
+        currentTheme = { theme: root.id, image: _imageSrc2 };
         saveThemeToLocalStorage(currentTheme);
     }
 }
@@ -552,7 +561,7 @@ function createListItem(id, text) {
 
     var hasContentEditable = el === 'p' ? 'true' : 'false';
     var labelledByActiveOrCompleted = completed === true ? 'completed' : 'active';
-    var listItem = '\n        <li role="tabpanel" aria-labelledby=' + labelledByActiveOrCompleted + ' class="list-item" data-id=' + id + ' data-completed="' + completed + '" draggable="true">\n          <button class="complete-btn">\n            <img src="/src/assets/images/icon-check.svg" aria-hidden="true" alt="" />\n            <span class="sr-only">Mark Todo as complete</span>\n          </button>\n          <' + el + ' class="list-item-text" contenteditable=' + hasContentEditable + '>' + text + '</' + el + '>\n          <button class="delete-btn todo-delete-icon">\n            <img class="d" src="/src/assets/images/icon-cross.svg" alt="" />\n            <span class="sr-only">Delete Todo</span>\n          </button>\n        </li>\n    ';
+    var listItem = '\n        <li role="tabpanel" aria-labelledby=' + labelledByActiveOrCompleted + ' class="list-item" data-id=' + id + ' data-completed="' + completed + '" draggable="true">\n          <button class="complete-btn">\n            <img src="/src/assets/images/icon-check.svg" aria-hidden="true" alt="" />\n            <span class="sr-only">Mark Todo as complete</span>\n          </button>\n          <' + el + ' class="list-item-text" contenteditable=' + hasContentEditable + '>' + text + '</' + el + '>\n          <button class="delete-btn todo-delete-icon">\n            <img src="/src/assets/images/icon-cross.svg" alt="" />\n            <span class="sr-only">Delete Todo</span>\n          </button>\n        </li>\n    ';
     return listItem;
 }
 /**
@@ -691,6 +700,19 @@ function getDragAfterElement(container, y) {
             return closest;
         }
     }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+/**
+ * Checks whether user has set their preference to dark mod
+ * @returns - true if yes, else false
+ */
+function prefersDarkMode() {
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        // The user has selected a dark color scheme
+        return true;
+    } else {
+        // The user has not selected a dark color scheme or their preference is not known
+        return false;
+    }
 }
 // ------------------------------------------------------------------------------
 //                             MUTATION OBSERVERS

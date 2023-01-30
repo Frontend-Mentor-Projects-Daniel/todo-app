@@ -13,7 +13,7 @@ const template = document.querySelector(
 const themeToggler = document.querySelector(
   '.theme-toggler'
 ) as HTMLButtonElement;
-const body = document.body as HTMLBodyElement;
+const root = document.documentElement as HTMLElement;
 
 // ------------------------------------------------------------------------------
 //                                 TYPES
@@ -486,29 +486,39 @@ function renderNumberOfTodos(model: Model) {
 
 function toggleTheme(theme?: CurrentTheme) {
   const imageIcon = themeToggler.firstElementChild as HTMLImageElement;
-  // if a current theme exists, use that
-  if (theme != null) {
-    body.id = theme.theme;
-    imageIcon.setAttribute('src', theme.image);
-    return;
-  }
-
   let currentTheme: CurrentTheme = {
     theme: '',
     image: '',
   };
 
-  if (body.id === 'light') {
-    body.id = 'dark';
+  // if a previous theme exists, use that
+  if (theme != null) {
+    root.id = theme.theme;
+    imageIcon.setAttribute('src', theme.image);
+    return;
+  }
+
+  // if user has preference set to dark mode, lock them into it
+  if (prefersDarkMode()) {
+    root.id = 'dark';
     imageIcon.setAttribute('src', '/src/assets/images/icon-sun.svg');
     const imageSrc = imageIcon.getAttribute('src') as string;
-    currentTheme = { theme: body.id, image: imageSrc };
+    currentTheme = { theme: root.id, image: imageSrc };
     saveThemeToLocalStorage(currentTheme);
-  } else {
-    body.id = 'light';
+    return;
+  }
+
+  if (root.id === 'dark') {
+    root.id = 'light';
     imageIcon.setAttribute('src', '/src/assets/images/icon-moon.svg');
     const imageSrc = imageIcon.getAttribute('src') as string;
-    currentTheme = { theme: body.id, image: imageSrc };
+    currentTheme = { theme: root.id, image: imageSrc };
+    saveThemeToLocalStorage(currentTheme);
+  } else if (root.id === 'light') {
+    root.id = 'dark';
+    imageIcon.setAttribute('src', '/src/assets/images/icon-sun.svg');
+    const imageSrc = imageIcon.getAttribute('src') as string;
+    currentTheme = { theme: root.id, image: imageSrc };
     saveThemeToLocalStorage(currentTheme);
   }
 }
@@ -634,7 +644,7 @@ function createListItem(
           </button>
           <${el} class="list-item-text" contenteditable=${hasContentEditable}>${text}</${el}>
           <button class="delete-btn todo-delete-icon">
-            <img class="d" src="/src/assets/images/icon-cross.svg" alt="" />
+            <img src="/src/assets/images/icon-cross.svg" alt="" />
             <span class="sr-only">Delete Todo</span>
           </button>
         </li>
@@ -804,6 +814,21 @@ function getDragAfterElement(container, y: number) {
     },
     { offset: Number.NEGATIVE_INFINITY }
   ).element;
+}
+
+/**
+ * Checks whether user has set their preference to dark mod
+ * @returns - true if yes, else false
+ */
+function prefersDarkMode(): boolean {
+  if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    // The user has selected a dark color scheme
+
+    return true;
+  } else {
+    // The user has not selected a dark color scheme or their preference is not known
+    return false;
+  }
 }
 
 // ------------------------------------------------------------------------------

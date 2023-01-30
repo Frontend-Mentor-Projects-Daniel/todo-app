@@ -21,7 +21,125 @@
 
   // Font Families
   --ff-josefin-sans: 'Josefin Sans', sans-serif;
+
+  // Light Theme (default)
+  --bg-body: var(--clr-background-light-gray);
+  --bg-list-item: var(--clr-white);
+  --bg-search-input: var(--clr-white);
+  --text-list-item: var(--clr-dark-grayish-blue);
+  --text-header-primary: var(--clr-white);
+  --text-search-input: var(--clr-dark-grayish-blue-400);
+  --text-search-input-placeholder: var(--clr-light-gray-400);
+  --bg-status-bar: var(--clr-white);
+  --drag-drop-text: var(--clr-light-gray-400);
+  --items-left-text: var(--clr-light-gray-400);
+  --clear-completed-text: var(--clr-light-gray-400);
+  --text-tabs: var(--clr-light-gray-400);
+  // Hover
+  --text-hover-tabs: var(--clr-dark-grayish-blue-200);
+  --clear-completed-text-hover: var(--clr-dark-grayish-blue-200);
+
+  // Bg image
+  --bg-image-mobile: url('/src/assets/images/bg-mobile-light.jpg');
+  --bg-image-desktop: url('/src/assets/images/bg-desktop-light.jpg');
 }
+
+// THEMING
+
+:root#light {
+  // Light Theme (default)
+  --bg-body: var(--clr-background-light-gray);
+  --bg-list-item: var(--clr-white);
+  --bg-search-input: var(--clr-white);
+  --text-list-item: var(--clr-dark-grayish-blue);
+  --text-header-primary: var(--clr-white);
+  --text-search-input: var(--clr-dark-grayish-blue-400);
+  --text-search-input-placeholder: var(--clr-light-gray-400);
+  --bg-status-bar: var(--clr-white);
+  --drag-drop-text: var(--clr-light-gray-400);
+  --items-left-text: var(--clr-light-gray-400);
+  --clear-completed-text: var(--clr-light-gray-400);
+  --text-tabs: var(--clr-light-gray-400);
+  // Hover
+  --text-hover-tabs: var(--clr-dark-grayish-blue-200);
+  --clear-completed-text-hover: var(--clr-dark-grayish-blue-200);
+
+  // Bg image
+  --bg-image-mobile: url('/src/assets/images/bg-mobile-light.jpg');
+  --bg-image-desktop: url('/src/assets/images/bg-desktop-light.jpg');
+}
+
+:root#dark {
+  --bg-body: var(--clr-background-dark-gray);
+  --bg-list-item: var(--clr-midnight-black);
+  --bg-search-input: var(--clr-midnight-black);
+  --text-header-primary: var(--clr-white);
+  --text-search-input: var(--clr-whitish-gray);
+  --text-list-item: var(--clr-whitish-gray);
+  --text-search-input-placeholder: var(--clr-dark-gray-text);
+  --bg-status-bar: var(--clr-midnight-black);
+  --drag-drop-text: var(--clr-dolphin-gray);
+  --items-left-text: var(--clr-dolphin-gray);
+  --clear-completed-text: var(--clr-dolphin-gray);
+  --text-tabs: var(--clr-dolphin-gray);
+  // Hover
+  --text-hover-tabs: var(--clr-white);
+  --clear-completed-text-hover: var(--clr-white);
+
+  // Bg image
+  --bg-image-mobile: url('/src/assets/images/bg-mobile-dark.jpg');
+  --bg-image-desktop: url('/src/assets/images/bg-desktop-dark.jpg');
+}
+
+:root#dark {
+  .create-bar {
+    box-shadow: 0px -10px 20px -12px rgba(0, 1, 14, 0.785);
+  }
+  .todo-list {
+    box-shadow: 0px -10px 20px -12px rgba(0, 1, 14, 0.785);
+  }
+  .wrapper {
+    box-shadow: 0px -10px 20px -12px rgba(0, 1, 14, 0.785);
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root,
+  :root#light,
+  :root#dark {
+    --bg-body: var(--clr-background-dark-gray);
+    --bg-list-item: var(--clr-midnight-black);
+    --bg-search-input: var(--clr-midnight-black);
+    --text-header-primary: var(--clr-white);
+    --text-search-input: var(--clr-whitish-gray);
+    --text-list-item: var(--clr-whitish-gray);
+    --text-search-input-placeholder: var(--clr-dark-gray-text);
+    --bg-status-bar: var(--clr-midnight-black);
+    --drag-drop-text: var(--clr-dolphin-gray);
+    --items-left-text: var(--clr-dolphin-gray);
+    --clear-completed-text: var(--clr-dolphin-gray);
+    --text-tabs: var(--clr-dolphin-gray);
+    // Hover
+    --text-hover-tabs: var(--clr-white);
+    --clear-completed-text-hover: var(--clr-white);
+
+    // Bg image
+    --bg-image-mobile: url('/src/assets/images/bg-mobile-dark.jpg');
+    --bg-image-desktop: url('/src/assets/images/bg-desktop-dark.jpg');
+  }
+
+  .create-bar {
+    box-shadow: 0px -10px 20px -12px rgba(0, 1, 14, 0.785) !important;
+  }
+  .todo-list {
+    box-shadow: 0px -10px 20px -12px rgba(0, 1, 14, 0.785) !important;
+  }
+  .wrapper {
+    box-shadow: 0px -10px 20px -12px rgba(0, 1, 14, 0.785) !important;
+  }
+}
+
+// GENERAL STYLES
 
 body {
   font-family: var(--ff-josefin-sans);
@@ -70,71 +188,3 @@ input::placeholder {
 .text-wrapper {
   color: var(--drag-drop-text);
 }
-
-// THEMING
-
-body#light {
-  // Light Theme (default)
-  --bg-body: var(--clr-background-light-gray);
-  --bg-list-item: var(--clr-white);
-  --bg-search-input: var(--clr-white);
-  --text-list-item: var(--clr-dark-grayish-blue);
-  --text-header-primary: var(--clr-white);
-  --text-search-input: var(--clr-dark-grayish-blue-400);
-  --text-search-input-placeholder: var(--clr-light-gray-400);
-  --bg-status-bar: var(--clr-white);
-  --drag-drop-text: var(--clr-light-gray-400);
-  --items-left-text: var(--clr-light-gray-400);
-  --clear-completed-text: var(--clr-light-gray-400);
-  --text-tabs: var(--clr-light-gray-400);
-  // Hover
-  --text-hover-tabs: var(--clr-dark-grayish-blue-200);
-  --clear-completed-text-hover: var(--clr-dark-grayish-blue-200);
-
-  // Bg image
-  --bg-image-mobile: url('/src/assets/images/bg-mobile-light.jpg');
-  --bg-image-desktop: url('/src/assets/images/bg-desktop-light.jpg');
-}
-
-body#dark {
-  --bg-body: var(--clr-background-dark-gray);
-  --bg-list-item: var(--clr-midnight-black);
-  --bg-search-input: var(--clr-midnight-black);
-  --text-header-primary: var(--clr-white);
-  --text-search-input: var(--clr-whitish-gray);
-  --text-list-item: var(--clr-whitish-gray);
-  --text-search-input-placeholder: var(--clr-dark-gray-text);
-  --bg-status-bar: var(--clr-midnight-black);
-  --drag-drop-text: var(--clr-dolphin-gray);
-  --items-left-text: var(--clr-dolphin-gray);
-  --clear-completed-text: var(--clr-dolphin-gray);
-  --text-tabs: var(--clr-dolphin-gray);
-  .create-bar {
-    box-shadow: 0px -10px 20px -12px rgba(0, 1, 14, 0.785);
-  }
-  .todo-list {
-    box-shadow: 0px -10px 20px -12px rgba(0, 1, 14, 0.785);
-  }
-  .wrapper {
-    box-shadow: 0px -10px 20px -12px rgba(0, 1, 14, 0.785);
-  }
-  // Hover
-  --text-hover-tabs: var(--clr-white);
-  --clear-completed-text-hover: var(--clr-white);
-
-  // Bg image
-  --bg-image-mobile: url('/src/assets/images/bg-mobile-dark.jpg');
-  --bg-image-desktop: url('/src/assets/images/bg-desktop-dark.jpg');
-}
-
-//TODO: DOESN'T WORK, FIX -- It overrides some of the dark-theme colours
-// @media (prefers-color-scheme: dark) {
-//   :root {
-//     color-scheme: dark;
-//     --bg-body: red;
-//     --bg-list-item: black;
-//     --text-search-input: white;
-//     --text-search-input-placeholder: deeppink;
-//     --text-list-item: white;
-//   }
-// }
