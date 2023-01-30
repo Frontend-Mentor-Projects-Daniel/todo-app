@@ -523,11 +523,11 @@ function toggleAriaSelected(tab: HTMLButtonElement) {
     '.tabs button'
   ) as NodeListOf<HTMLButtonElement>;
   allTabs.forEach((tab) => {
-    tab.setAttribute('aria-selected', '');
+    tab.setAttribute('aria-selected', 'false');
   });
 
   const isSelected = tab.getAttribute('aria-selected');
-  if (isSelected === null || isSelected === '') {
+  if (isSelected === null || isSelected === 'false') {
     tab.setAttribute('aria-selected', 'true');
   }
 }
@@ -630,10 +630,12 @@ function createListItem(
         <li role="tabpanel" aria-labelledby=${labelledByActiveOrCompleted} class="list-item" data-id=${id} data-completed="${completed}" draggable="true">
           <button class="complete-btn">
             <img src="/src/assets/images/icon-check.svg" aria-hidden="true" alt="" />
+            <span class="sr-only">Mark Todo as complete</span>
           </button>
           <${el} class="list-item-text" contenteditable=${hasContentEditable}>${text}</${el}>
           <button class="delete-btn todo-delete-icon">
             <img class="d" src="/src/assets/images/icon-cross.svg" alt="" />
+            <span class="sr-only">Delete Todo</span>
           </button>
         </li>
     `;

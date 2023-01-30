@@ -445,10 +445,10 @@ function toggleAriaSelected(tab) {
     // reset the aria-selected attribute on all the tabs
     var allTabs = document.querySelectorAll('.tabs button');
     allTabs.forEach(function (tab) {
-        tab.setAttribute('aria-selected', '');
+        tab.setAttribute('aria-selected', 'false');
     });
     var isSelected = tab.getAttribute('aria-selected');
-    if (isSelected === null || isSelected === '') {
+    if (isSelected === null || isSelected === 'false') {
         tab.setAttribute('aria-selected', 'true');
     }
 }
@@ -552,7 +552,7 @@ function createListItem(id, text) {
 
     var hasContentEditable = el === 'p' ? 'true' : 'false';
     var labelledByActiveOrCompleted = completed === true ? 'completed' : 'active';
-    var listItem = '\n        <li role="tabpanel" aria-labelledby=' + labelledByActiveOrCompleted + ' class="list-item" data-id=' + id + ' data-completed="' + completed + '" draggable="true">\n          <button class="complete-btn">\n            <img src="/src/assets/images/icon-check.svg" aria-hidden="true" alt="" />\n          </button>\n          <' + el + ' class="list-item-text" contenteditable=' + hasContentEditable + '>' + text + '</' + el + '>\n          <button class="delete-btn todo-delete-icon">\n            <img class="d" src="/src/assets/images/icon-cross.svg" alt="" />\n          </button>\n        </li>\n    ';
+    var listItem = '\n        <li role="tabpanel" aria-labelledby=' + labelledByActiveOrCompleted + ' class="list-item" data-id=' + id + ' data-completed="' + completed + '" draggable="true">\n          <button class="complete-btn">\n            <img src="/src/assets/images/icon-check.svg" aria-hidden="true" alt="" />\n            <span class="sr-only">Mark Todo as complete</span>\n          </button>\n          <' + el + ' class="list-item-text" contenteditable=' + hasContentEditable + '>' + text + '</' + el + '>\n          <button class="delete-btn todo-delete-icon">\n            <img class="d" src="/src/assets/images/icon-cross.svg" alt="" />\n            <span class="sr-only">Delete Todo</span>\n          </button>\n        </li>\n    ';
     return listItem;
 }
 /**
